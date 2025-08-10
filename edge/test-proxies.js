@@ -15,7 +15,7 @@ const CONFIG = {
   testUrl: 'https://www.google.com',
   maxRetries: 2,
   delayBetweenRequests: 1000,
-  portsToCheck: [80, 443, 8080, 3128, 8888]
+  portsToCheck: [80, 443, 8080, 3128, 8888],
 };
 
 async function testHttpProxy(proxyHost, proxyPort) {
@@ -24,10 +24,10 @@ async function testHttpProxy(proxyHost, proxyPort) {
       host: proxyHost,
       port: proxyPort,
       path: CONFIG.testUrl,
-      timeout: CONFIG.timeout
+      timeout: CONFIG.timeout,
     };
 
-    const req = http.get(options, (res) => {
+    const req = http.get(options, res => {
       resolve({ success: res.statusCode === 200 });
       req.destroy();
     });
@@ -46,10 +46,10 @@ async function testHttpsProxy(proxyHost, proxyPort) {
       host: proxyHost,
       port: proxyPort,
       path: CONFIG.testUrl,
-      timeout: CONFIG.timeout
+      timeout: CONFIG.timeout,
     };
 
-    const req = https.get(options, (res) => {
+    const req = https.get(options, res => {
       resolve({ success: res.statusCode === 200 });
       req.destroy();
     });
@@ -71,7 +71,7 @@ async function validateProxy(proxyHost, proxyPort) {
     const results = await Promise.all([
       testHttpProxy(proxyHost, proxyPort),
       testHttpsProxy(proxyHost, proxyPort),
-      testSocksProxy(proxyHost, proxyPort)
+      testSocksProxy(proxyHost, proxyPort),
     ]);
 
     return results.some(result => result.success);
@@ -84,7 +84,7 @@ async function getIpInfo(ip) {
   try {
     const services = [
       `http://ip-api.com/json/${ip}?fields=status,country,city,as`,
-      `https://ipinfo.io/${ip}/json?token=${process.env.IPINFO_TOKEN || ''}`
+      `https://ipinfo.io/${ip}/json?token=${process.env.IPINFO_TOKEN || ''}`,
     ];
 
     for (const url of services) {
@@ -97,7 +97,7 @@ async function getIpInfo(ip) {
               status: 'success',
               country: data.country || data.country_name,
               city: data.city,
-              as: data.as || data.org
+              as: data.as || data.org,
             };
           }
         }
@@ -140,7 +140,9 @@ async function main() {
     const endIndex = startIndex + chunkSize;
     const proxiesToCheck = proxies.slice(startIndex, endIndex);
 
-    console.log(`Testing ${proxiesToCheck.length} proxies in chunk ${chunkIndex + 1}/${totalChunks}`);
+    console.log(
+      `Testing ${proxiesToCheck.length} proxies in chunk ${chunkIndex + 1}/${totalChunks}`,
+    );
 
     const workingProxies = [];
     for (const proxy of proxiesToCheck) {
@@ -153,7 +155,7 @@ async function main() {
               workingProxies.push({
                 ip: proxy.ip,
                 port: proxy.port,
-                ...info
+                ...info,
               });
             }
             break;
