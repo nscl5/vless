@@ -1,6 +1,6 @@
 ## Active proxies (Port 443)
 
-_Last updated on: Sun, 10 Aug 2025 02:13:13 GMT_
-_Total working proxies found: 0_
+*Last updated on: Sun, 10 Aug 2025 02:33:22 GMT*
+*Total working proxies found: 0*
 
 No working proxies were found in this run.
