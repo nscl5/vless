@@ -1,119 +1,210 @@
 import fs from 'fs';
 import path from 'path';
 import net from 'net';
-import http from 'http';
 import https from 'https';
+import http from 'http';
 import { performance } from 'perf_hooks';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configuration
-const CONFIG = {
-  timeout: 5000,
-  testUrl: 'https://www.google.com',
-  maxRetries: 2,
-  delayBetweenRequests: 1000,
-  portsToCheck: [80, 443, 8080, 3128, 8888],
-};
-
-async function testHttpProxy(proxyHost, proxyPort) {
+function testHTTPProxy(proxyHost, proxyPort, timeout = 10000) {
   return new Promise(resolve => {
-    const options = {
-      host: proxyHost,
-      port: proxyPort,
-      path: CONFIG.testUrl,
-      timeout: CONFIG.timeout,
+    const socket = new net.Socket();
+    let hasResolved = false;
+    
+    const resolveOnce = (result) => {
+      if (hasResolved) return;
+      hasResolved = true;
+      resolve(result);
+      socket.destroy();
     };
 
-    const req = http.get(options, res => {
-      resolve({ success: res.statusCode === 200 });
-      req.destroy();
+    socket.setTimeout(timeout);
+    
+    socket.on('connect', () => {
+      const connectRequest = `CONNECT httpbin.org:80 HTTP/1.1\r\nHost: httpbin.org:80\r\n\r\n`;
+      socket.write(connectRequest);
     });
 
-    req.on('error', () => resolve({ success: false }));
-    req.on('timeout', () => {
-      req.destroy();
-      resolve({ success: false });
+    socket.on('data', data => {
+      const response = data.toString();
+      if (response.includes('200') || response.includes('established')) {
+        resolveOnce({ success: true, method: 'HTTP_CONNECT' });
+      } else {
+        resolveOnce({ success: false, method: 'HTTP_CONNECT' });
+      }
     });
+
+    socket.on('error', error => {
+      resolveOnce({ success: false, method: 'HTTP_CONNECT', error: error.message });
+    });
+
+    socket.on('timeout', () => {
+      resolveOnce({ success: false, method: 'HTTP_CONNECT', error: 'timeout' });
+    });
+
+    socket.connect(proxyPort, proxyHost);
   });
 }
 
-async function testHttpsProxy(proxyHost, proxyPort) {
+function testTCPConnection(proxyHost, proxyPort, timeout = 8000) {
   return new Promise(resolve => {
-    const options = {
-      host: proxyHost,
-      port: proxyPort,
-      path: CONFIG.testUrl,
-      timeout: CONFIG.timeout,
+    const socket = new net.Socket();
+    let hasResolved = false;
+    
+    const resolveOnce = (result) => {
+      if (hasResolved) return;
+      hasResolved = true;
+      resolve(result);
+      socket.destroy();
     };
 
-    const req = https.get(options, res => {
-      resolve({ success: res.statusCode === 200 });
-      req.destroy();
+    socket.setTimeout(timeout);
+    
+    socket.on('connect', () => {
+      resolveOnce({ success: true, method: 'TCP' });
     });
 
-    req.on('error', () => resolve({ success: false }));
-    req.on('timeout', () => {
-      req.destroy();
-      resolve({ success: false });
+    socket.on('error', error => {
+      resolveOnce({ success: false, method: 'TCP', error: error.message });
     });
+
+    socket.on('timeout', () => {
+      resolveOnce({ success: false, method: 'TCP', error: 'timeout' });
+    });
+
+    socket.connect(proxyPort, proxyHost);
   });
 }
 
-async function testSocksProxy(proxyHost, proxyPort) {
-  return { success: false };
+function testSOCKS5Proxy(proxyHost, proxyPort, timeout = 8000) {
+  return new Promise(resolve => {
+    const socket = new net.Socket();
+    let hasResolved = false;
+    
+    const resolveOnce = (result) => {
+      if (hasResolved) return;
+      hasResolved = true;
+      resolve(result);
+      socket.destroy();
+    };
+
+    socket.setTimeout(timeout);
+    
+    socket.on('connect', () => {
+      
+      const greeting = Buffer.from([0x05, 0x01, 0x00]); // VER, NMETHODS, METHOD
+      socket.write(greeting);
+    });
+
+    socket.on('data', data => {
+      if (data.length >= 2 && data[0] === 0x05) {
+        resolveOnce({ success: true, method: 'SOCKS5' });
+      } else {
+        resolveOnce({ success: false, method: 'SOCKS5' });
+      }
+    });
+
+    socket.on('error', error => {
+      resolveOnce({ success: false, method: 'SOCKS5', error: error.message });
+    });
+
+    socket.on('timeout', () => {
+      resolveOnce({ success: false, method: 'SOCKS5', error: 'timeout' });
+    });
+
+    socket.connect(proxyPort, proxyHost);
+  });
 }
 
-async function validateProxy(proxyHost, proxyPort) {
-  try {
-    const results = await Promise.all([
-      testHttpProxy(proxyHost, proxyPort),
-      testHttpsProxy(proxyHost, proxyPort),
-      testSocksProxy(proxyHost, proxyPort),
-    ]);
+async function validateProxyIP(proxyHost, proxyPort) {
+  const tests = [
+    () => testHTTPProxy(proxyHost, proxyPort),
+    () => testSOCKS5Proxy(proxyHost, proxyPort),
+    () => testTCPConnection(proxyHost, proxyPort)
+  ];
 
-    return results.some(result => result.success);
-  } catch (e) {
-    return false;
+  for (const test of tests) {
+    try {
+      const result = await test();
+      if (result.success) {
+        return { success: true, method: result.method };
+      }
+    } catch (error) {
+      continue; // امتحان روش بعدی
+    }
   }
+  
+  return { success: false };
 }
 
 async function getIpInfo(ip) {
   try {
-    const services = [
-      `https://ipinfo.io/${ip}/json?token=${process.env.IPINFO_TOKEN || ''}`,
-      `http://ip-api.com/json/${ip}?fields=status,country,city,as`,
-    ];
 
-    for (const url of services) {
-      try {
-        const response = await fetch(url);
-        if (response.ok) {
-          const data = await response.json();
-
-          if (data.ip) {
-            return {
-              status: 'success',
-              country: data.country,
-              city: data.city,
-              as: data.org,
-            };
-          }
-          if (data.status === 'success') {
-            return data;
-          }
-        }
-      } catch (e) {
-        continue;
-      }
-      await new Promise(res => setTimeout(res, 1000));
-    }
-    return { status: 'fail' };
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,city,as,proxy`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)'
+      },
+      signal: AbortSignal.timeout(10000)
+    });
+    
+    if (!response.ok) return { status: 'fail' };
+    const data = await response.json();
+    
+    await new Promise(res => setTimeout(res, 200));
+    
+    return data;
   } catch (e) {
+    console.log(`Failed to get info for ${ip}: ${e.message}`);
     return { status: 'fail' };
   }
+}
+
+async function processProxiesInBatches(proxies, batchSize = 10) {
+  const workingProxies = [];
+  
+  for (let i = 0; i < proxies.length; i += batchSize) {
+    const batch = proxies.slice(i, i + batchSize);
+    console.log(`Processing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(proxies.length/batchSize)} (${batch.length} proxies)...`);
+    
+    const batchPromises = batch.map(async ([ip, port]) => {
+      try {
+        const result = await validateProxyIP(ip, parseInt(port));
+        if (result.success) {
+          const info = await getIpInfo(ip);
+          if (info.status === 'success') {
+            return { 
+              ip, 
+              port, 
+              method: result.method,
+              country: info.country,
+              city: info.city,
+              as: info.as,
+              proxy: info.proxy || 'unknown'
+            };
+          }
+        }
+        return null;
+      } catch (error) {
+        console.log(`Error testing ${ip}:${port} - ${error.message}`);
+        return null;
+      }
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    const validResults = batchResults.filter(result => result !== null);
+    workingProxies.push(...validResults);
+    
+    console.log(`Batch completed. Found ${validResults.length} working proxies.`);
+    
+    if (i + batchSize < proxies.length) {
+      await new Promise(res => setTimeout(res, 2000));
+    }
+  }
+  
+  return workingProxies;
 }
 
 async function main() {
@@ -122,63 +213,77 @@ async function main() {
     const totalChunks = parseInt(process.env.TOTAL_CHUNKS, 10);
 
     const proxyFilePath = path.join(__dirname, '../sub/country_proxies/02_proxies.csv');
-    const rawContent = fs.readFileSync(proxyFilePath, 'utf-8');
+    
+    if (!fs.existsSync(proxyFilePath)) {
+      console.error(`Proxy file not found: ${proxyFilePath}`);
+      process.exit(1);
+    }
 
-    const proxies = [];
+    const rawContent = fs.readFileSync(proxyFilePath, 'utf-8');
+    const ipPortCombinations = [];
     const lines = rawContent.split(/\r?\n/);
 
+    console.log(`Processing CSV with ${lines.length} lines...`);
+
     for (const line of lines) {
-      if (!line || line.startsWith('IP Address')) continue;
+      if (!line || line.startsWith('IP Address') || line.startsWith('﻿IP Address')) continue;
+      
       const parts = line.trim().split(',');
       if (parts.length >= 2) {
         const ip = parts[0].trim();
-        const port = parseInt(parts[1].trim(), 10);
-        if (ip && !isNaN(port)) {
-          proxies.push({ ip, port });
+        const port = parts[1].trim();
+        
+        // بررسی معتبر بودن IP و محدود کردن به پورت 443
+        if (ip && port && /^\d+\.\d+\.\d+\.\d+$/.test(ip) && port === '443') {
+          ipPortCombinations.push([ip, port]);
         }
       }
     }
 
-    const chunkSize = Math.ceil(proxies.length / totalChunks);
-    const startIndex = chunkIndex * chunkSize;
-    const endIndex = startIndex + chunkSize;
-    const proxiesToCheck = proxies.slice(startIndex, endIndex);
-
-    console.log(
-      `Testing ${proxiesToCheck.length} proxies in chunk ${chunkIndex + 1}/${totalChunks}`,
+    // حذف موارد تکراری
+    const uniqueProxies = Array.from(
+      new Map(ipPortCombinations.map(([ip, port]) => [`${ip}:${port}`, [ip, port]])).values()
     );
 
-    const workingProxies = [];
-    for (const proxy of proxiesToCheck) {
-      for (let attempt = 1; attempt <= CONFIG.maxRetries; attempt++) {
-        try {
-          const isValid = await validateProxy(proxy.ip, proxy.port);
-          if (isValid) {
-            const info = await getIpInfo(proxy.ip);
-            if (info.status === 'success') {
-              workingProxies.push({
-                ip: proxy.ip,
-                port: proxy.port,
-                ...info,
-              });
-            }
-            break;
-          }
-        } catch (e) {
-          console.error(`Error testing ${proxy.ip}:${proxy.port}`, e);
-        }
-        await new Promise(res => setTimeout(res, CONFIG.delayBetweenRequests));
-      }
+    console.log(`Found ${uniqueProxies.length} unique proxy combinations on port 443`);
+
+    const chunkSize = Math.ceil(uniqueProxies.length / totalChunks);
+    const startIndex = chunkIndex * chunkSize;
+    const endIndex = Math.min(startIndex + chunkSize, uniqueProxies.length);
+    const proxiesToCheck = uniqueProxies.slice(startIndex, endIndex);
+
+    if (proxiesToCheck.length === 0) {
+      console.log(`Chunk ${chunkIndex + 1}/${totalChunks} has no proxies to test. Exiting.`);
+      fs.writeFileSync('working_proxies_partial.txt', '');
+      return;
     }
 
-    console.log(`Found ${workingProxies.length} working proxies in chunk ${chunkIndex + 1}`);
+    console.log(
+      `Job ${chunkIndex + 1}/${totalChunks}: Testing ${proxiesToCheck.length} proxies on port 443 (indices ${startIndex}-${endIndex-1})...`,
+    );
+
+    const startTime = performance.now();
+    const workingProxies = await processProxiesInBatches(proxiesToCheck, 8);
+    const endTime = performance.now();
+
+    console.log(
+      `Job ${chunkIndex + 1}/${totalChunks} completed in ${Math.round(endTime - startTime)}ms. Found ${workingProxies.length} working proxies.`,
+    );
 
     if (workingProxies.length > 0) {
-      const output = workingProxies.map(p => JSON.stringify(p)).join('\n') + '\n';
-      fs.writeFileSync('working_proxies_partial.txt', output);
+      const jsonOutput = workingProxies.map(p => JSON.stringify(p)).join('\n') + '\n';
+      fs.writeFileSync('working_proxies_partial.txt', jsonOutput);
+    } else {
+      fs.writeFileSync('working_proxies_partial.txt', '');
     }
+
+    console.log(`\n=== Chunk ${chunkIndex + 1} Summary ===`);
+    console.log(`Total tested: ${proxiesToCheck.length}`);
+    console.log(`Working proxies: ${workingProxies.length}`);
+    console.log(`Success rate: ${((workingProxies.length / proxiesToCheck.length) * 100).toFixed(2)}%`);
+    
   } catch (error) {
-    console.error('Main error:', error);
+    console.error('An unexpected error occurred in test-proxies.js:', error);
     process.exit(1);
   }
 }
