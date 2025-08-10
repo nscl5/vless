@@ -12,90 +12,90 @@
 ## 🔌 Ports Distribution
 
 | Port | Count | Percentage |
-|------|-------|------------|
-| 443 | 45 | 100.0% |
+| ---- | ----- | ---------- |
+| 443  | 45    | 100.0%     |
 
 ## 🌐 Working Proxies by Country
 
 ### The Netherlands (20 proxies)
 
-| Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------|
-| `103.106.1.2:443` | Meppel | TCP | AS44477 PQ HOSTING PLUS S.R.L. |
-| `109.107.184.216:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `178.208.76.68:443` | Amsterdam | TCP | AS216139 Iron Hosting Centre LTD |
-| `185.94.165.167:443` | Amsterdam | TCP | AS200740 FIRST SERVER LIMITED |
-| `192.236.249.96:443` | Amsterdam | TCP | AS54290 Hostwinds LLC. |
-| `193.160.96.232:443` | Amsterdam | TCP | AS56611 REBA Communications BV |
-| `194.113.153.237:443` | Amsterdam | TCP | AS57043 HOSTKEY B.V. |
-| `194.58.39.80:443` | Amsterdam | TCP | AS26383 Baxet Group Inc. |
-| `195.200.17.63:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `24.144.79.45:443` | Amsterdam | TCP | AS14061 DigitalOcean, LLC |
-| `45.8.145.223:443` | Meppel | TCP | AS44477 PQ HOSTING PLUS S.R.L. |
-| `5.35.71.48:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `77.238.246.45:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `85.192.40.6:443` | Amsterdam | TCP | AS210644 AEZA INTERNATIONAL LTD |
-| `89.110.108.46:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `89.110.110.89:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `89.110.119.204:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `89.110.68.158:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `89.110.69.173:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
-| `89.110.74.90:443` | Amsterdam | TCP | AS216071 SERVERS TECH FZCO |
+| Proxy IP              | City      | Method | ISP / Organization               |
+| --------------------- | --------- | ------ | -------------------------------- |
+| `103.106.1.2:443`     | Meppel    | TCP    | AS44477 PQ HOSTING PLUS S.R.L.   |
+| `109.107.184.216:443` | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `178.208.76.68:443`   | Amsterdam | TCP    | AS216139 Iron Hosting Centre LTD |
+| `185.94.165.167:443`  | Amsterdam | TCP    | AS200740 FIRST SERVER LIMITED    |
+| `192.236.249.96:443`  | Amsterdam | TCP    | AS54290 Hostwinds LLC.           |
+| `193.160.96.232:443`  | Amsterdam | TCP    | AS56611 REBA Communications BV   |
+| `194.113.153.237:443` | Amsterdam | TCP    | AS57043 HOSTKEY B.V.             |
+| `194.58.39.80:443`    | Amsterdam | TCP    | AS26383 Baxet Group Inc.         |
+| `195.200.17.63:443`   | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `24.144.79.45:443`    | Amsterdam | TCP    | AS14061 DigitalOcean, LLC        |
+| `45.8.145.223:443`    | Meppel    | TCP    | AS44477 PQ HOSTING PLUS S.R.L.   |
+| `5.35.71.48:443`      | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `77.238.246.45:443`   | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `85.192.40.6:443`     | Amsterdam | TCP    | AS210644 AEZA INTERNATIONAL LTD  |
+| `89.110.108.46:443`   | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `89.110.110.89:443`   | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `89.110.119.204:443`  | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `89.110.68.158:443`   | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `89.110.69.173:443`   | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
+| `89.110.74.90:443`    | Amsterdam | TCP    | AS216071 SERVERS TECH FZCO       |
 
 ### Germany (9 proxies)
 
-| Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------|
-| `104.248.241.182:443` | Frankfurt am Main | TCP | AS14061 DigitalOcean, LLC |
-| `139.59.206.9:443` | Frankfurt am Main | TCP | AS14061 DigitalOcean, LLC |
-| `164.92.139.18:443` | Frankfurt am Main | TCP | AS14061 DigitalOcean, LLC |
-| `194.164.59.222:443` | Berlin | TCP | AS8560 IONOS SE |
-| `199.59.229.178:443` | Frankfurt am Main | TCP | AS11179 Aryaka Networks, Inc. |
-| `38.180.181.130:443` | Frankfurt am Main | TCP | AS28753 Leaseweb Deutschland GmbH |
-| `46.101.243.68:443` | Frankfurt am Main | TCP | AS14061 DigitalOcean, LLC |
-| `64.226.114.20:443` | Frankfurt am Main | TCP | AS14061 DigitalOcean, LLC |
-| `95.181.151.172:443` | Frankfurt am Main | TCP | AS216127 INTERNATIONAL HOSTING COMPANY LIMITED |
+| Proxy IP              | City              | Method | ISP / Organization                             |
+| --------------------- | ----------------- | ------ | ---------------------------------------------- |
+| `104.248.241.182:443` | Frankfurt am Main | TCP    | AS14061 DigitalOcean, LLC                      |
+| `139.59.206.9:443`    | Frankfurt am Main | TCP    | AS14061 DigitalOcean, LLC                      |
+| `164.92.139.18:443`   | Frankfurt am Main | TCP    | AS14061 DigitalOcean, LLC                      |
+| `194.164.59.222:443`  | Berlin            | TCP    | AS8560 IONOS SE                                |
+| `199.59.229.178:443`  | Frankfurt am Main | TCP    | AS11179 Aryaka Networks, Inc.                  |
+| `38.180.181.130:443`  | Frankfurt am Main | TCP    | AS28753 Leaseweb Deutschland GmbH              |
+| `46.101.243.68:443`   | Frankfurt am Main | TCP    | AS14061 DigitalOcean, LLC                      |
+| `64.226.114.20:443`   | Frankfurt am Main | TCP    | AS14061 DigitalOcean, LLC                      |
+| `95.181.151.172:443`  | Frankfurt am Main | TCP    | AS216127 INTERNATIONAL HOSTING COMPANY LIMITED |
 
 ### Switzerland (5 proxies)
 
-| Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------|
-| `179.43.166.2:443` | Rümlang | TCP | AS51852 Private Layer INC |
-| `38.180.161.11:443` | Zurich | TCP | AS51852 Private Layer INC |
-| `38.180.84.46:443` | Bern | TCP | AS51852 Private Layer INC |
-| `45.85.93.21:443` | Geneva | TCP | AS199058 SERVA ONE LTD |
-| `45.85.93.96:443` | Geneva | TCP | AS199058 SERVA ONE LTD |
+| Proxy IP            | City    | Method | ISP / Organization        |
+| ------------------- | ------- | ------ | ------------------------- |
+| `179.43.166.2:443`  | Rümlang | TCP    | AS51852 Private Layer INC |
+| `38.180.161.11:443` | Zurich  | TCP    | AS51852 Private Layer INC |
+| `38.180.84.46:443`  | Bern    | TCP    | AS51852 Private Layer INC |
+| `45.85.93.21:443`   | Geneva  | TCP    | AS199058 SERVA ONE LTD    |
+| `45.85.93.96:443`   | Geneva  | TCP    | AS199058 SERVA ONE LTD    |
 
 ### United Kingdom (4 proxies)
 
-| Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------|
-| `178.32.58.147:443` | Southwark | TCP | AS16276 OVH SAS |
-| `46.226.162.184:443` | London | TCP | AS210644 AEZA INTERNATIONAL LTD |
-| `91.149.202.142:443` | London | TCP | AS26383 Baxet Group Inc. |
-| `95.179.236.51:443` | Tower Hamlets | TCP | AS20473 The Constant Company, LLC |
+| Proxy IP             | City          | Method | ISP / Organization                |
+| -------------------- | ------------- | ------ | --------------------------------- |
+| `178.32.58.147:443`  | Southwark     | TCP    | AS16276 OVH SAS                   |
+| `46.226.162.184:443` | London        | TCP    | AS210644 AEZA INTERNATIONAL LTD   |
+| `91.149.202.142:443` | London        | TCP    | AS26383 Baxet Group Inc.          |
+| `95.179.236.51:443`  | Tower Hamlets | TCP    | AS20473 The Constant Company, LLC |
 
 ### Netherlands (3 proxies)
 
-| Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------|
-| `193.33.153.240:443` | Amsterdam | TCP | AS210644 AEZA INTERNATIONAL LTD |
-| `193.33.153.92:443` | Amsterdam | TCP | AS210644 AEZA INTERNATIONAL LTD |
-| `194.87.62.139:443` | Dronten | TCP | AS41745 Baykov Ilya Sergeevich |
+| Proxy IP             | City      | Method | ISP / Organization              |
+| -------------------- | --------- | ------ | ------------------------------- |
+| `193.33.153.240:443` | Amsterdam | TCP    | AS210644 AEZA INTERNATIONAL LTD |
+| `193.33.153.92:443`  | Amsterdam | TCP    | AS210644 AEZA INTERNATIONAL LTD |
+| `194.87.62.139:443`  | Dronten   | TCP    | AS41745 Baykov Ilya Sergeevich  |
 
 ### Austria (2 proxies)
 
-| Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------|
-| `212.113.119.130:443` | Vienna | TCP | AS210644 AEZA INTERNATIONAL LTD |
-| `94.177.8.54:443` | Wien | TCP | AS40994 Hohl IT e.U. |
+| Proxy IP              | City   | Method | ISP / Organization              |
+| --------------------- | ------ | ------ | ------------------------------- |
+| `212.113.119.130:443` | Vienna | TCP    | AS210644 AEZA INTERNATIONAL LTD |
+| `94.177.8.54:443`     | Wien   | TCP    | AS40994 Hohl IT e.U.            |
 
 ### France (2 proxies)
 
-| Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------|
-| `109.120.178.197:443` | Paris | TCP | AS210644 AEZA INTERNATIONAL LTD |
-| `45.95.173.22:443` | Strasbourg | TCP | AS29066 velia.net Internetdienste GmbH |
+| Proxy IP              | City       | Method | ISP / Organization                     |
+| --------------------- | ---------- | ------ | -------------------------------------- |
+| `109.120.178.197:443` | Paris      | TCP    | AS210644 AEZA INTERNATIONAL LTD        |
+| `45.95.173.22:443`    | Strasbourg | TCP    | AS29066 velia.net Internetdienste GmbH |
 
 ## 📋 All Working Proxies - Port 443 (Copy-Friendly Format)
 
@@ -149,9 +149,10 @@
 91.149.202.142:443
 95.179.236.51:443
 ```
+
 </details>
 
-<br/> 
+<br/>
 
 ## 💾 JSON Format
 
@@ -570,7 +571,8 @@
 
 </details>
 
-<br/> 
+<br/>
 
 ---
-*Generated by Proxy IP Tester | Next update: Tue, 12 Aug 2025 14:39:38 GMT*
+
+_Generated by Proxy IP Tester | Next update: Tue, 12 Aug 2025 14:39:38 GMT_
