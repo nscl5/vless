@@ -80,12 +80,11 @@ async function validateProxy(proxyHost, proxyPort) {
   }
 }
 
-
 async function getIpInfo(ip) {
   try {
     const services = [
       `https://ipinfo.io/${ip}/json?token=${process.env.IPINFO_TOKEN || ''}`,
-      `http://ip-api.com/json/${ip}?fields=status,country,city,as`
+      `http://ip-api.com/json/${ip}?fields=status,country,city,as`,
     ];
 
     for (const url of services) {
@@ -99,7 +98,7 @@ async function getIpInfo(ip) {
               status: 'success',
               country: data.country,
               city: data.city,
-              as: data.org
+              as: data.org,
             };
           }
           if (data.status === 'success') {
