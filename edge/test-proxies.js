@@ -80,11 +80,12 @@ async function validateProxy(proxyHost, proxyPort) {
   }
 }
 
+
 async function getIpInfo(ip) {
   try {
     const services = [
-      `http://ip-api.com/json/${ip}?fields=status,country,city,as`,
       `https://ipinfo.io/${ip}/json?token=${process.env.IPINFO_TOKEN || ''}`,
+      `http://ip-api.com/json/${ip}?fields=status,country,city,as`
     ];
 
     for (const url of services) {
@@ -92,13 +93,17 @@ async function getIpInfo(ip) {
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          if (data.status === 'success' || data.ip) {
+
+          if (data.ip) {
             return {
               status: 'success',
-              country: data.country || data.country_name,
+              country: data.country,
               city: data.city,
-              as: data.as || data.org,
+              as: data.org
             };
+          }
+          if (data.status === 'success') {
+            return data;
           }
         }
       } catch (e) {
