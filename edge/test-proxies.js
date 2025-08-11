@@ -213,16 +213,19 @@ async function processProxiesInBatches(proxies, batchSize = 10) {
 async function fetchNauticaProxies() {
   try {
     console.log('Fetching proxies from Nautica repository...');
-    const response = await fetch('https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
-      signal: AbortSignal.timeout(15000)
-    });
-    
+    const response = await fetch(
+      'https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt',
+      {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
+        signal: AbortSignal.timeout(15000),
+      },
+    );
+
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
+
     const content = await response.text();
     const proxies = [];
-    
+
     content.split(/\r?\n/).forEach(line => {
       const parts = line.trim().split(',');
       if (parts.length >= 2) {
@@ -233,7 +236,7 @@ async function fetchNauticaProxies() {
         }
       }
     });
-    
+
     console.log(`Found ${proxies.length} port 443 proxies from Nautica`);
     return proxies;
   } catch (error) {
@@ -245,26 +248,32 @@ async function fetchNauticaProxies() {
 async function fetchNiRevilProxies() {
   try {
     console.log('Fetching proxies from NiREvil repository...');
-    const response = await fetch('https://raw.githubusercontent.com/NiREvil/vless/refs/heads/main/sub/ProxyIP.md', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
-      signal: AbortSignal.timeout(15000)
-    });
-    
+    const response = await fetch(
+      'https://raw.githubusercontent.com/NiREvil/vless/refs/heads/main/sub/ProxyIP.md',
+      {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
+        signal: AbortSignal.timeout(15000),
+      },
+    );
+
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
+
     const content = await response.text();
     const proxies = [];
-    
+
     const yamlBlocks = content.match(/```yaml\s*\n([^\`]+)\n```/g);
     if (yamlBlocks) {
       yamlBlocks.forEach(block => {
-        const ip = block.replace(/```yaml\s*\n/, '').replace(/\n```/, '').trim();
+        const ip = block
+          .replace(/```yaml\s*\n/, '')
+          .replace(/\n```/, '')
+          .trim();
         if (/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
           proxies.push([ip, '443']);
         }
       });
     }
-    
+
     console.log(`Found ${proxies.length} proxies from NiREvil`);
     return proxies;
   } catch (error) {
@@ -284,17 +293,17 @@ async function main() {
     if (fs.existsSync(proxyFilePath)) {
       const rawContent = fs.readFileSync(proxyFilePath, 'utf-8');
       const lines = rawContent.split(/\r?\n/);
-      
+
       console.log(`Processing CSV with ${lines.length} lines...`);
-      
+
       for (const line of lines) {
         if (!line || line.startsWith('IP Address') || line.startsWith('﻿IP Address')) continue;
-        
+
         const parts = line.trim().split(',');
         if (parts.length >= 2) {
           const ip = parts[0].trim();
           const port = parts[1].trim();
-          
+
           if (ip && port === '443' && /^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
             allProxySources.push([ip, port]);
           }
@@ -310,7 +319,7 @@ async function main() {
     allProxySources.push(...niRevilProxies);
 
     const uniqueProxies = Array.from(
-      new Map(allProxySources.map(([ip, port]) => [`${ip}:${port}`, [ip, port]])).values()
+      new Map(allProxySources.map(([ip, port]) => [`${ip}:${port}`, [ip, port]])).values(),
     );
 
     console.log(`Total unique proxies from all sources: ${uniqueProxies.length}`);
