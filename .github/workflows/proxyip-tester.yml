@@ -52,12 +52,19 @@ jobs:
           pattern: partial-results-*
           merge-multiple: true
 
+      - name: Pull latest changes
+        run: |
+          git config --global user.name "NET Sentinel Bot"
+          git config --global user.email "224584266+NetSentinel-Bot@users.noreply.github.com"
+          git pull origin main --rebase
+
       - name: Combine results and generate final markdown
         id: combine_step
         run: |
           cat artifacts/*.txt > all_working_proxies.txt 2>/dev/null || true
           
           node edge/generate-markdown.js
+
 
       - name: Commit and Push Results
         uses: stefanzweifel/git-auto-commit-action@v5
