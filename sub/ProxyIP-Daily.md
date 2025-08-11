@@ -23,7 +23,7 @@
 - **🔴 Different ports:** 1
 - **⚪ Success methods:** TCP (67)
 
-<br/> 
+<br/>
 
 ## 🔌 Ports Distribution
 
@@ -31,35 +31,34 @@
 | ---- | ----- | ---------- |
 | 443  | 6     | 100.0%     |
 
-<br/> 
+<br/>
 
 ## 🫧 Working Proxies by Country
 
-<br/> 
+<br/>
 
 ### 🇳🇱 The Netherlands (29 proxies)
 
-| Proxy IP              | City      | ISP / Organization                  | Method |
-| --------------------- | --------- | ----------------------------------- | ------ |
-| `109.107.187.20`  | Amsterdam | AS216071 SERVERS TECH FZCO          |  TCP   |
-| `109.237.98.214`  | Amsterdam | AS210644 AEZA INTERNATIONAL LTD     |  TCP   |
-| `178.159.38.148`  | Meppel    | AS204601 Zomro B.V.                 |  TCP   |
+| Proxy IP         | City      | ISP / Organization              | Method |
+| ---------------- | --------- | ------------------------------- | ------ |
+| `109.107.187.20` | Amsterdam | AS216071 SERVERS TECH FZCO      | TCP    |
+| `109.237.98.214` | Amsterdam | AS210644 AEZA INTERNATIONAL LTD | TCP    |
+| `178.159.38.148` | Meppel    | AS204601 Zomro B.V.             | TCP    |
 
 ### 🇩🇪 Germany (8 proxies)
 
-| Proxy IP             | City              | ISP / Organization               | Method |
-| -------------------- | ----------------- | -------------------------------- | ------ |
-|   `157.245.27.205`   | Frankfurt am Main | AS14061 DigitalOcean, LLC        |  TCP   |
-|   `167.235.57.61`    | Nuremberg         | AS24940 Hetzner Online GmbH      |  TCP   |
-
+| Proxy IP         | City              | ISP / Organization          | Method |
+| ---------------- | ----------------- | --------------------------- | ------ |
+| `157.245.27.205` | Frankfurt am Main | AS14061 DigitalOcean, LLC   | TCP    |
+| `167.235.57.61`  | Nuremberg         | AS24940 Hetzner Online GmbH | TCP    |
 
 ### 🇹🇷 Türkiye (1 proxies)
 
-| Proxy IP             | City           | ISP / Organization               | Method |
-| -------------------- | ------------ | -------------------------------- | ------ |
-|   `95.164.11.116`    |     Izmir    |  AS44477 PQ HOSTING PLUS S.R.L.  |   TCP  |
+| Proxy IP        | City  | ISP / Organization             | Method |
+| --------------- | ----- | ------------------------------ | ------ |
+| `95.164.11.116` | Izmir | AS44477 PQ HOSTING PLUS S.R.L. | TCP    |
 
-<br/> 
+<br/>
 
 ## 📋 All Working Proxies - Port 443 (Copy-Friendly Format)
 
@@ -77,7 +76,7 @@
 
 </details>
 
-<br/> 
+<br/>
 
 ## 💾 JSON Format
 
