@@ -1,4 +1,4 @@
-# 🌐 Daily Proxy Test Results (Port 443)
+# 🗺️ Daily Proxy Test Results (Port 443)
 
 **Last updated:** Mon, 11 Aug 2025 01:59:09 GMT
 
@@ -9,7 +9,7 @@
 - **Different ports:** 1
 - **Success methods:** TCP (45)
 
-## 🔌 Ports Distribution
+### 🔌 Ports Distribution
 
 | Port | Count | Percentage |
 |------|-------|------------|
@@ -20,7 +20,7 @@
 ### The Netherlands (26 proxies)
 
 | Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------||
+|----------|------|--------|--------------------|
 | `176.222.54.31:443` | Amsterdam | TCP | AS57043 HOSTKEY B.V. |
 | `176.222.55.163:443` | Amsterdam | TCP | AS57043 HOSTKEY B.V. |
 | `185.233.203.106:443` | Amsterdam | TCP | AS200740 FIRST SERVER LIMITED |
@@ -51,7 +51,7 @@
 ### Germany (11 proxies)
 
 | Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------||
+|----------|------|--------|--------------------|
 | `164.90.228.172:443` | Frankfurt am Main | TCP | AS14061 DigitalOcean, LLC |
 | `165.227.134.63:443` | Frankfurt am Main | TCP | AS14061 DigitalOcean, LLC |
 | `18.156.209.101:443` | Frankfurt am Main | TCP | AS16509 Amazon.com, Inc. |
@@ -67,7 +67,7 @@
 ### United Kingdom (4 proxies)
 
 | Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------||
+|----------|------|--------|--------------------|
 | `104.128.190.65:443` | Coventry | TCP | AS42831 UK Dedicated Servers Limited |
 | `91.149.238.88:443` | London | TCP | AS26383 Baxet Group Inc. |
 | `93.114.133.159:443` | Maidenhead | TCP | AS202448 MVPS LTD |
@@ -76,7 +76,7 @@
 ### Netherlands (3 proxies)
 
 | Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------||
+|----------|------|--------|--------------------|
 | `45.133.118.153:443` | Amsterdam | TCP | AS210429 Hizakura B.V. |
 | `45.143.167.213:443` | Amsterdam | TCP | AS62005 BlueVPS OU |
 | `5.180.182.128:443` | Amsterdam | TCP | AS41436 Kamatera Inc |
@@ -84,12 +84,18 @@
 ### France (1 proxies)
 
 | Proxy IP | City | Method | ISP / Organization |
-|----------|------|--------|--------------------||
+|----------|------|--------|--------------------|
 | `135.125.4.40:443` | Strasbourg | TCP | AS16276 OVH SAS |
+
+
+<br/> 
 
 ## 📋 All Working Proxies - Port 443 (Copy-Friendly Format)
 
-```
+<details>
+<summary>Click to expand RAW data</summary>
+
+```yaml
 135.125.4.40:443
 164.90.228.172:443
 165.227.134.63:443
@@ -136,6 +142,10 @@
 93.114.133.159:443
 95.164.37.32:443
 ```
+
+</details>
+
+<br/> 
 
 ## 💾 JSON Format
 
