@@ -94,7 +94,7 @@ function testSOCKS5Proxy(proxyHost, proxyPort, timeout = 8000) {
     socket.setTimeout(timeout);
 
     socket.on('connect', () => {
-      const greeting = Buffer.from([0x05, 0x01, 0x00]); // VER, NMETHODS, METHOD
+      const greeting = Buffer.from([0x05, 0x01, 0x00]);
       socket.write(greeting);
     });
 
@@ -132,7 +132,7 @@ async function validateProxyIP(proxyHost, proxyPort) {
         return { success: true, method: result.method };
       }
     } catch (error) {
-      continue; // امتحان روش بعدی
+      continue;
     }
   }
 
@@ -210,45 +210,110 @@ async function processProxiesInBatches(proxies, batchSize = 10) {
   return workingProxies;
 }
 
+async function fetchNauticaProxies() {
+  try {
+    console.log('Fetching proxies from Nautica repository...');
+    const response = await fetch('https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
+      signal: AbortSignal.timeout(15000)
+    });
+    
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const content = await response.text();
+    const proxies = [];
+    
+    content.split(/\r?\n/).forEach(line => {
+      const parts = line.trim().split(',');
+      if (parts.length >= 2) {
+        const ip = parts[0].trim();
+        const port = parts[1].trim();
+        if (/^\d+\.\d+\.\d+\.\d+$/.test(ip) && port === '443') {
+          proxies.push([ip, port]);
+        }
+      }
+    });
+    
+    console.log(`Found ${proxies.length} port 443 proxies from Nautica`);
+    return proxies;
+  } catch (error) {
+    console.error('Failed to fetch Nautica proxies:', error.message);
+    return [];
+  }
+}
+
+async function fetchNiRevilProxies() {
+  try {
+    console.log('Fetching proxies from NiREvil repository...');
+    const response = await fetch('https://raw.githubusercontent.com/NiREvil/vless/refs/heads/main/sub/ProxyIP.md', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
+      signal: AbortSignal.timeout(15000)
+    });
+    
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const content = await response.text();
+    const proxies = [];
+    
+    const yamlBlocks = content.match(/```yaml\s*\n([^\`]+)\n```/g);
+    if (yamlBlocks) {
+      yamlBlocks.forEach(block => {
+        const ip = block.replace(/```yaml\s*\n/, '').replace(/\n```/, '').trim();
+        if (/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
+          proxies.push([ip, '443']);
+        }
+      });
+    }
+    
+    console.log(`Found ${proxies.length} proxies from NiREvil`);
+    return proxies;
+  } catch (error) {
+    console.error('Failed to fetch NiREvil proxies:', error.message);
+    return [];
+  }
+}
+
 async function main() {
   try {
     const chunkIndex = parseInt(process.env.CHUNK_INDEX, 10);
     const totalChunks = parseInt(process.env.TOTAL_CHUNKS, 10);
 
+    const allProxySources = [];
+
     const proxyFilePath = path.join(__dirname, '../sub/country_proxies/02_proxies.csv');
-
-    if (!fs.existsSync(proxyFilePath)) {
-      console.error(`Proxy file not found: ${proxyFilePath}`);
-      process.exit(1);
-    }
-
-    const rawContent = fs.readFileSync(proxyFilePath, 'utf-8');
-    const ipPortCombinations = [];
-    const lines = rawContent.split(/\r?\n/);
-
-    console.log(`Processing CSV with ${lines.length} lines...`);
-
-    for (const line of lines) {
-      if (!line || line.startsWith('IP Address') || line.startsWith('﻿IP Address')) continue;
-
-      const parts = line.trim().split(',');
-      if (parts.length >= 2) {
-        const ip = parts[0].trim();
-        const port = parts[1].trim();
-
-        // بررسی معتبر بودن IP و محدود کردن به پورت 443
-        if (ip && port && /^\d+\.\d+\.\d+\.\d+$/.test(ip) && port === '443') {
-          ipPortCombinations.push([ip, port]);
+    if (fs.existsSync(proxyFilePath)) {
+      const rawContent = fs.readFileSync(proxyFilePath, 'utf-8');
+      const lines = rawContent.split(/\r?\n/);
+      
+      console.log(`Processing CSV with ${lines.length} lines...`);
+      
+      for (const line of lines) {
+        if (!line || line.startsWith('IP Address') || line.startsWith('﻿IP Address')) continue;
+        
+        const parts = line.trim().split(',');
+        if (parts.length >= 2) {
+          const ip = parts.trim();
+          const port = parts.trim();
+          
+          if (ip && port === '443' && /^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
+            allProxySources.push([ip, port]);
+          }
         }
       }
+      console.log(`Found ${allProxySources.length} proxies from local CSV`);
     }
 
-    // حذف موارد تکراری
+    const nauticaProxies = await fetchNauticaProxies();
+    const niRevilProxies = await fetchNiRevilProxies();
+
+    allProxySources.push(...nauticaProxies);
+    allProxySources.push(...niRevilProxies);
+
     const uniqueProxies = Array.from(
-      new Map(ipPortCombinations.map(([ip, port]) => [`${ip}:${port}`, [ip, port]])).values(),
+      new Map(allProxySources.map(([ip, port]) => [`${ip}:${port}`, [ip, port]])).values()
     );
 
-    console.log(`Found ${uniqueProxies.length} unique proxy combinations on port 443`);
+    console.log(`Total unique proxies from all sources: ${uniqueProxies.length}`);
 
     const chunkSize = Math.ceil(uniqueProxies.length / totalChunks);
     const startIndex = chunkIndex * chunkSize;
