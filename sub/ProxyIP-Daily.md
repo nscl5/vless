@@ -6,11 +6,11 @@
 >
 > <br/>
 >
-> **Last updated:** Tue, 12 Aug 2025 01:48:43 GMT
+> **Last updated:** Wed, 13 Aug 2025 01:50:56 GMT
 >
 > <br/>
 >
-> **Next update:** Thu, 14 Aug 2025 01:48:43 GMT
+> **Next update:** Fri, 15 Aug 2025 01:50:56 GMT
 >
 > <br/>
 >
@@ -65,12 +65,13 @@
 | `89.110.80.120` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
 | `91.184.242.138` | Amsterdam | AS210644 AEZA INTERNATIONAL LTD | TCP |
 
-### 🇩🇪 Germany (7 proxies)
+### 🇩🇪 Germany (8 proxies)
 
 | Proxy IP | City | ISP / Organization | Method |
 |----------|------|--------------------|--------|
 | `142.132.178.99` | Falkenstein | AS24940 Hetzner Online GmbH | TCP |
 | `165.232.123.155` | Frankfurt am Main | AS14061 DigitalOcean, LLC | TCP |
+| `194.87.54.121` | Frankfurt am Main | AS216127 INTERNATIONAL HOSTING COMPANY LIMITED | TCP |
 | `5.61.39.183` | Frankfurt am Main | AS28753 Leaseweb Deutschland GmbH | TCP |
 | `64.227.114.71` | Frankfurt am Main | AS14061 DigitalOcean, LLC | TCP |
 | `66.151.41.250` | Frankfurt am Main | AS57043 HOSTKEY B.V. | TCP |
@@ -87,14 +88,6 @@
 | `94.177.8.50` | Wien | AS40994 Hohl IT e.U. | TCP |
 | `94.177.8.9` | Wien | AS40994 Hohl IT e.U. | TCP |
 
-### 🇨🇭 Switzerland (3 proxies)
-
-| Proxy IP | City | ISP / Organization | Method |
-|----------|------|--------------------|--------|
-| `194.87.18.92` | Geneva | AS26383 Baxet Group Inc. | TCP |
-| `45.85.93.49` | Geneva | AS199058 SERVA ONE LTD | TCP |
-| `94.131.12.56` | Bern | AS44477 PQ HOSTING PLUS S.R.L. | TCP |
-
 ### 🇫🇮 Finland (2 proxies)
 
 | Proxy IP | City | ISP / Organization | Method |
@@ -108,6 +101,13 @@
 |----------|------|--------------------|--------|
 | `193.176.153.197` | Paris | AS56971 AS56971 Cloud | TCP |
 | `88.218.76.170` | Strasbourg | AS29066 velia.net Internetdienste GmbH | TCP |
+
+### 🇨🇭 Switzerland (2 proxies)
+
+| Proxy IP | City | ISP / Organization | Method |
+|----------|------|--------------------|--------|
+| `45.85.93.49` | Geneva | AS199058 SERVA ONE LTD | TCP |
+| `94.131.12.56` | Bern | AS44477 PQ HOSTING PLUS S.R.L. | TCP |
 
 ### 🇭🇺 Hungary (1 proxies)
 
@@ -152,6 +152,7 @@
 88.218.76.170
 142.132.178.99
 165.232.123.155
+194.87.54.121
 5.61.39.183
 64.227.114.71
 66.151.41.250
@@ -159,7 +160,6 @@
 79.133.46.166
 95.164.23.71
 34.253.234.62
-194.87.18.92
 45.85.93.49
 94.131.12.56
 109.120.158.198
@@ -299,6 +299,15 @@
     "proxy": "unknown"
   },
   {
+    "ip": "194.87.54.121",
+    "port": "443",
+    "method": "TCP",
+    "country": "Germany",
+    "city": "Frankfurt am Main",
+    "as": "AS216127 INTERNATIONAL HOSTING COMPANY LIMITED",
+    "proxy": "unknown"
+  },
+  {
     "ip": "5.61.39.183",
     "port": "443",
     "method": "TCP",
@@ -359,15 +368,6 @@
     "country": "Ireland",
     "city": "Dublin",
     "as": "AS16509 Amazon.com, Inc.",
-    "proxy": "unknown"
-  },
-  {
-    "ip": "194.87.18.92",
-    "port": "443",
-    "method": "TCP",
-    "country": "Switzerland",
-    "city": "Geneva",
-    "as": "AS26383 Baxet Group Inc.",
     "proxy": "unknown"
   },
   {
