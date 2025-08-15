@@ -130,7 +130,7 @@ async function vlessOverWSHandler(request) {
 	let address = '';
 	let portWithRandomLog = '';
 	const log = (/** @type {string} */ info, /** @type {string | undefined} */ event) => {
-		console.log(`[${address}:${portWithRandomLog}] ${info}`, event || '');
+		console.log('[%s:%s] %s', address, portWithRandomLog, info, event || '');
 	};
 	const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
 
