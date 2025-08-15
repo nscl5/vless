@@ -146,13 +146,13 @@ async function processProxiesInBatches(proxies, batchSize = 10) {
       `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(proxies.length / batchSize)} (${batch.length} proxies)...`,
     );
 
-    const batchPromises = batch.map(async (proxyData) => {
+    const batchPromises = batch.map(async proxyData => {
       try {
         const result = await validateProxyIP(proxyData.ip, parseInt(proxyData.port));
         if (result.success) {
           return {
             ...proxyData,
-            method: result.method
+            method: result.method,
           };
         }
         return null;
@@ -199,7 +199,7 @@ async function fetchNscl5Proxies() {
             port: port,
             country: parts[2].trim(),
             city: '',
-            as: parts[3].trim()
+            as: parts[3].trim(),
           });
         }
       }
@@ -241,7 +241,7 @@ async function main() {
               port: port,
               country: parts[4].trim(),
               city: parts[5].trim(),
-              as: parts[6].trim()
+              as: parts[6].trim(),
             });
           }
         }

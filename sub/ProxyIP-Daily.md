@@ -13,7 +13,6 @@
 > **Next update:** Sun, 17 Aug 2025 12:16:03 GMT
 >
 > <br/>
->
 
 </br>
 
@@ -29,8 +28,8 @@
 ## 🔌 Ports Distribution
 
 | Port | Count | Percentage |
-|------|-------|------------|
-| 443  | 90     | 100.0%     |
+| ---- | ----- | ---------- |
+| 443  | 90    | 100.0%     |
 
 <br/>
 
@@ -40,108 +39,108 @@
 
 ### 🇳🇱 The Netherlands (85 proxies)
 
-| Proxy IP | City | ISP / Organization | Method |
-|----------|------|--------------------|--------|
-| `103.97.88.120` | Amsterdam | AS56630 Melbikomas UAB | TCP |
-| `103.97.88.133` | Amsterdam | AS56630 Melbikomas UAB | TCP |
-| `104.249.40.126` | Dronten | AS50053 Individual Entrepreneur Anton Levin | TCP |
-| `107.189.24.89` | Zaandam | AS14956 RouterHosting LLC | TCP |
-| `109.107.178.159` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `109.107.185.199` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `109.107.187.52` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `109.120.142.21` | Amsterdam | AS216139 Iron Hosting Centre LTD | TCP |
-| `142.93.136.199` | Amsterdam | AS14061 DigitalOcean, LLC | TCP |
-| `146.0.74.212` | Amsterdam | AS57043 HOSTKEY B.V. | TCP |
-| `146.0.79.33` | Amsterdam | AS57043 HOSTKEY B.V. | TCP |
-| `146.103.33.181` | Meppel | AS199058 SERVA ONE LTD | TCP |
-| `147.45.111.41` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `147.45.134.173` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `147.45.137.3` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `147.45.139.9` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `147.45.171.252` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `147.45.173.238` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `147.45.174.205` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `185.105.108.154` | Amsterdam | AS216139 Iron Hosting Centre LTD | TCP |
-| `185.106.120.66` | Hoofddorp | AS60117 Host Sailor Ltd | TCP |
-| `185.117.72.7` | Hoofddorp | AS60117 Host Sailor Ltd | TCP |
-| `185.121.232.7` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.121.233.147` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.121.234.212` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.121.234.56` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.121.235.164` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.121.235.202` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.125.201.110` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `185.130.225.38` | Amsterdam | AS57043 HOSTKEY B.V. | TCP |
-| `185.14.30.163` | Amsterdam | AS21100 GREEN FLOID LLC | TCP |
-| `185.157.212.221` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.157.213.162` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.157.214.130` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.157.214.29` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.157.214.38` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `185.170.213.108` | Dronten | AS202448 MVPS LTD | TCP |
-| `185.171.83.115` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `193.23.118.226` | Amsterdam | AS214036 Ultahost, Inc. | TCP |
-| `193.233.16.39` | Amsterdam | AS216127 INTERNATIONAL HOSTING COMPANY LIMITED | TCP |
-| `193.38.54.174` | Amsterdam | AS44477 PQ HOSTING PLUS S.R.L. | TCP |
-| `194.135.20.88` | Amsterdam | AS215346 Big Data Host LLC | TCP |
-| `194.135.38.134` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `194.135.38.140` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `194.135.38.156` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `194.147.149.155` | Dronten | AS52000 MIRhosting B.V. | TCP |
-| `194.156.65.205` | Amsterdam | AS200904 FOXCLOUD LLP | TCP |
-| `194.156.65.223` | Amsterdam | AS200904 FOXCLOUD LLP | TCP |
-| `194.156.65.85` | Amsterdam | AS200904 FOXCLOUD LLP | TCP |
-| `194.164.33.2` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `194.164.34.40` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `194.246.81.122` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `194.246.82.216` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `194.58.57.93` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `194.60.133.204` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `37.220.84.186` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `37.220.85.88` | Amsterdam | AS210976 Timeweb, LLP | TCP |
-| `38.180.132.68` | Amsterdam | AS58061 Scalaxy B.V. | TCP |
-| `38.180.71.187` | Amsterdam | AS58061 Scalaxy B.V. | TCP |
-| `38.180.97.196` | Amsterdam | AS58061 Scalaxy B.V. | TCP |
-| `46.17.102.108` | Amsterdam | AS57043 HOSTKEY B.V. | TCP |
-| `46.17.97.224` | Amsterdam | AS57043 HOSTKEY B.V. | TCP |
-| `46.17.98.76` | Amsterdam | AS57043 HOSTKEY B.V. | TCP |
-| `46.249.50.72` | Oldenzaal | AS50673 Serverius | TCP |
-| `46.30.47.8` | Amsterdam | AS216139 Iron Hosting Centre LTD | TCP |
-| `46.8.229.222` | Amsterdam | AS56971 AS56971 Cloud | TCP |
-| `77.238.230.12` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.230.18` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.232.228` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.237.176` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.238.133` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.239.97` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.240.175` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.241.168` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.244.75` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.246.216` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.251.29` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `77.238.254.35` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `89.169.5.27` | Amsterdam | AS43581 ZTV CORP LLC | TCP |
-| `91.132.58.144` | Amsterdam | AS216154 CLODO CLOUD SERVICE CO. L.L.C | TCP |
-| `91.132.58.156` | Amsterdam | AS216154 CLODO CLOUD SERVICE CO. L.L.C | TCP |
-| `91.84.100.104` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `91.84.100.19` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `91.84.101.222` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
-| `91.84.102.145` | Amsterdam | AS216071 SERVERS TECH FZCO | TCP |
+| Proxy IP          | City      | ISP / Organization                             | Method |
+| ----------------- | --------- | ---------------------------------------------- | ------ |
+| `103.97.88.120`   | Amsterdam | AS56630 Melbikomas UAB                         | TCP    |
+| `103.97.88.133`   | Amsterdam | AS56630 Melbikomas UAB                         | TCP    |
+| `104.249.40.126`  | Dronten   | AS50053 Individual Entrepreneur Anton Levin    | TCP    |
+| `107.189.24.89`   | Zaandam   | AS14956 RouterHosting LLC                      | TCP    |
+| `109.107.178.159` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `109.107.185.199` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `109.107.187.52`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `109.120.142.21`  | Amsterdam | AS216139 Iron Hosting Centre LTD               | TCP    |
+| `142.93.136.199`  | Amsterdam | AS14061 DigitalOcean, LLC                      | TCP    |
+| `146.0.74.212`    | Amsterdam | AS57043 HOSTKEY B.V.                           | TCP    |
+| `146.0.79.33`     | Amsterdam | AS57043 HOSTKEY B.V.                           | TCP    |
+| `146.103.33.181`  | Meppel    | AS199058 SERVA ONE LTD                         | TCP    |
+| `147.45.111.41`   | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `147.45.134.173`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `147.45.137.3`    | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `147.45.139.9`    | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `147.45.171.252`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `147.45.173.238`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `147.45.174.205`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `185.105.108.154` | Amsterdam | AS216139 Iron Hosting Centre LTD               | TCP    |
+| `185.106.120.66`  | Hoofddorp | AS60117 Host Sailor Ltd                        | TCP    |
+| `185.117.72.7`    | Hoofddorp | AS60117 Host Sailor Ltd                        | TCP    |
+| `185.121.232.7`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.121.233.147` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.121.234.212` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.121.234.56`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.121.235.164` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.121.235.202` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.125.201.110` | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `185.130.225.38`  | Amsterdam | AS57043 HOSTKEY B.V.                           | TCP    |
+| `185.14.30.163`   | Amsterdam | AS21100 GREEN FLOID LLC                        | TCP    |
+| `185.157.212.221` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.157.213.162` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.157.214.130` | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.157.214.29`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.157.214.38`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `185.170.213.108` | Dronten   | AS202448 MVPS LTD                              | TCP    |
+| `185.171.83.115`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `193.23.118.226`  | Amsterdam | AS214036 Ultahost, Inc.                        | TCP    |
+| `193.233.16.39`   | Amsterdam | AS216127 INTERNATIONAL HOSTING COMPANY LIMITED | TCP    |
+| `193.38.54.174`   | Amsterdam | AS44477 PQ HOSTING PLUS S.R.L.                 | TCP    |
+| `194.135.20.88`   | Amsterdam | AS215346 Big Data Host LLC                     | TCP    |
+| `194.135.38.134`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `194.135.38.140`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `194.135.38.156`  | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `194.147.149.155` | Dronten   | AS52000 MIRhosting B.V.                        | TCP    |
+| `194.156.65.205`  | Amsterdam | AS200904 FOXCLOUD LLP                          | TCP    |
+| `194.156.65.223`  | Amsterdam | AS200904 FOXCLOUD LLP                          | TCP    |
+| `194.156.65.85`   | Amsterdam | AS200904 FOXCLOUD LLP                          | TCP    |
+| `194.164.33.2`    | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `194.164.34.40`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `194.246.81.122`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `194.246.82.216`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `194.58.57.93`    | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `194.60.133.204`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `37.220.84.186`   | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `37.220.85.88`    | Amsterdam | AS210976 Timeweb, LLP                          | TCP    |
+| `38.180.132.68`   | Amsterdam | AS58061 Scalaxy B.V.                           | TCP    |
+| `38.180.71.187`   | Amsterdam | AS58061 Scalaxy B.V.                           | TCP    |
+| `38.180.97.196`   | Amsterdam | AS58061 Scalaxy B.V.                           | TCP    |
+| `46.17.102.108`   | Amsterdam | AS57043 HOSTKEY B.V.                           | TCP    |
+| `46.17.97.224`    | Amsterdam | AS57043 HOSTKEY B.V.                           | TCP    |
+| `46.17.98.76`     | Amsterdam | AS57043 HOSTKEY B.V.                           | TCP    |
+| `46.249.50.72`    | Oldenzaal | AS50673 Serverius                              | TCP    |
+| `46.30.47.8`      | Amsterdam | AS216139 Iron Hosting Centre LTD               | TCP    |
+| `46.8.229.222`    | Amsterdam | AS56971 AS56971 Cloud                          | TCP    |
+| `77.238.230.12`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.230.18`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.232.228`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.237.176`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.238.133`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.239.97`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.240.175`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.241.168`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.244.75`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.246.216`  | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.251.29`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `77.238.254.35`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `89.169.5.27`     | Amsterdam | AS43581 ZTV CORP LLC                           | TCP    |
+| `91.132.58.144`   | Amsterdam | AS216154 CLODO CLOUD SERVICE CO. L.L.C         | TCP    |
+| `91.132.58.156`   | Amsterdam | AS216154 CLODO CLOUD SERVICE CO. L.L.C         | TCP    |
+| `91.84.100.104`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `91.84.100.19`    | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `91.84.101.222`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
+| `91.84.102.145`   | Amsterdam | AS216071 SERVERS TECH FZCO                     | TCP    |
 
 ### 🇳🇱 Netherlands (3 proxies)
 
-| Proxy IP | City | ISP / Organization | Method |
-|----------|------|--------------------|--------|
-| `146.19.254.246` | Amsterdam | AS62005 BlueVPS OU | TCP |
-| `193.168.173.55` | Amsterdam | AS41436 Kamatera Inc | TCP |
-| `194.146.39.128` | Amsterdam | AS41436 Kamatera Inc | TCP |
+| Proxy IP         | City      | ISP / Organization   | Method |
+| ---------------- | --------- | -------------------- | ------ |
+| `146.19.254.246` | Amsterdam | AS62005 BlueVPS OU   | TCP    |
+| `193.168.173.55` | Amsterdam | AS41436 Kamatera Inc | TCP    |
+| `194.146.39.128` | Amsterdam | AS41436 Kamatera Inc | TCP    |
 
 ### 🇷🇺 Russia (2 proxies)
 
-| Proxy IP | City | ISP / Organization | Method |
-|----------|------|--------------------|--------|
-| `185.147.127.154` | Moscow | AS210976 Timeweb, LLP | TCP |
-| `193.124.189.227` | Moscow | AS200740 FIRST SERVER LIMITED | TCP |
+| Proxy IP          | City   | ISP / Organization            | Method |
+| ----------------- | ------ | ----------------------------- | ------ |
+| `185.147.127.154` | Moscow | AS210976 Timeweb, LLP         | TCP    |
+| `193.124.189.227` | Moscow | AS200740 FIRST SERVER LIMITED | TCP    |
 
 <br/>
 
