@@ -24,16 +24,11 @@ const ENCODED = {
 
 // Default user UUID, proxyIP, DNS Resolver, UI panel and websucket states.
 let userCode = 'bb813507-8ed8-40c0-9b64-3eba878349a2';
-let proxyIP = 'nima.nscl.ir';
+let proxyIP = 'turk.radicalization.ir';
 let dnsResolver = '1.1.1.1';
 const HTML_URL = 'https://nirevil.github.io/zizifn/';
 const WS_READY_STATE_OPEN = 1;
 const WS_READY_STATE_CLOSING = 2;
-
-// Scamalytics API Configuration
-const SCAMALYTICS_USERNAME = 'dianaclk01';
-const SCAMALYTICS_API_KEY = 'c57eb62bbde89f00742cb3f92d7127f96132c9cea460f18c08fd5e62530c5604';
-const SCAMALYTICS_API_BASE_URL = 'https://api11.scamalytics.com/v3/';
 
 function isValidUserCode(code) {
   const codeRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
