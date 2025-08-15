@@ -210,11 +210,11 @@ async function processProxiesInBatches(proxies, batchSize = 10) {
   return workingProxies;
 }
 
-async function fetchNauticaProxies() {
+async function fetchNscl5Proxies() {
   try {
-    console.log('Fetching proxies from Nautica repository...');
+    console.log('Fetching proxies from Nscl5 repository...');
     const response = await fetch(
-      'https://raw.githubusercontent.com/FoolVPN-ID/Nautica/refs/heads/main/proxyList.txt',
+      'https://raw.githubusercontent.com/nscl5/address/refs/heads/main/Data/alive.txt',
       {
         headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
         signal: AbortSignal.timeout(15000),
@@ -237,47 +237,10 @@ async function fetchNauticaProxies() {
       }
     });
 
-    console.log(`Found ${proxies.length} port 443 proxies from Nautica`);
+    console.log(`Found ${proxies.length} port 443 proxies from Nscl5`);
     return proxies;
   } catch (error) {
-    console.error('Failed to fetch Nautica proxies:', error.message);
-    return [];
-  }
-}
-
-async function fetchNiRevilProxies() {
-  try {
-    console.log('Fetching proxies from NiREvil repository...');
-    const response = await fetch(
-      'https://raw.githubusercontent.com/NiREvil/vless/refs/heads/main/sub/ProxyIP.md',
-      {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)' },
-        signal: AbortSignal.timeout(15000),
-      },
-    );
-
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
-    const content = await response.text();
-    const proxies = [];
-
-    const yamlBlocks = content.match(/```yaml\s*\n([^\`]+)\n```/g);
-    if (yamlBlocks) {
-      yamlBlocks.forEach(block => {
-        const ip = block
-          .replace(/```yaml\s*\n/, '')
-          .replace(/\n```/, '')
-          .trim();
-        if (/^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
-          proxies.push([ip, '443']);
-        }
-      });
-    }
-
-    console.log(`Found ${proxies.length} proxies from NiREvil`);
-    return proxies;
-  } catch (error) {
-    console.error('Failed to fetch NiREvil proxies:', error.message);
+    console.error('Failed to fetch Nscl5 proxies:', error.message);
     return [];
   }
 }
@@ -312,11 +275,9 @@ async function main() {
       console.log(`Found ${allProxySources.length} proxies from local CSV`);
     }
 
-    const nauticaProxies = await fetchNauticaProxies();
-    const niRevilProxies = await fetchNiRevilProxies();
+    const nscl5Proxies = await fetchNscl5Proxies();
 
-    allProxySources.push(...nauticaProxies);
-    allProxySources.push(...niRevilProxies);
+    allProxySources.push(...nscl5Proxies);
 
     const uniqueProxies = Array.from(
       new Map(allProxySources.map(([ip, port]) => [`${ip}:${port}`, [ip, port]])).values(),
