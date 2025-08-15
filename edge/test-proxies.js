@@ -1,8 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import net from 'net';
-import https from 'https';
-import http from 'http';
 import { performance } from 'perf_hooks';
 import { fileURLToPath } from 'url';
 
@@ -139,30 +137,6 @@ async function validateProxyIP(proxyHost, proxyPort) {
   return { success: false };
 }
 
-async function getIpInfo(ip) {
-  try {
-    const response = await fetch(
-      `http://ip-api.com/json/${ip}?fields=status,country,city,as,proxy`,
-      {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; ProxyTester/1.0)',
-        },
-        signal: AbortSignal.timeout(10000),
-      },
-    );
-
-    if (!response.ok) return { status: 'fail' };
-    const data = await response.json();
-
-    await new Promise(res => setTimeout(res, 200));
-
-    return data;
-  } catch (e) {
-    console.log(`Failed to get info for ${ip}: ${e.message}`);
-    return { status: 'fail' };
-  }
-}
-
 async function processProxiesInBatches(proxies, batchSize = 10) {
   const workingProxies = [];
 
@@ -172,26 +146,18 @@ async function processProxiesInBatches(proxies, batchSize = 10) {
       `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(proxies.length / batchSize)} (${batch.length} proxies)...`,
     );
 
-    const batchPromises = batch.map(async ([ip, port]) => {
+    const batchPromises = batch.map(async (proxyData) => {
       try {
-        const result = await validateProxyIP(ip, parseInt(port));
+        const result = await validateProxyIP(proxyData.ip, parseInt(proxyData.port));
         if (result.success) {
-          const info = await getIpInfo(ip);
-          if (info.status === 'success') {
-            return {
-              ip,
-              port,
-              method: result.method,
-              country: info.country,
-              city: info.city,
-              as: info.as,
-              proxy: info.proxy || 'unknown',
-            };
-          }
+          return {
+            ...proxyData,
+            method: result.method
+          };
         }
         return null;
       } catch (error) {
-        console.log(`Error testing ${ip}:${port} - ${error.message}`);
+        console.log(`Error testing ${proxyData.ip}:${proxyData.port} - ${error.message}`);
         return null;
       }
     });
@@ -201,10 +167,6 @@ async function processProxiesInBatches(proxies, batchSize = 10) {
     workingProxies.push(...validResults);
 
     console.log(`Batch completed. Found ${validResults.length} working proxies.`);
-
-    if (i + batchSize < proxies.length) {
-      await new Promise(res => setTimeout(res, 2000));
-    }
   }
 
   return workingProxies;
@@ -228,11 +190,17 @@ async function fetchNscl5Proxies() {
 
     content.split(/\r?\n/).forEach(line => {
       const parts = line.trim().split(',');
-      if (parts.length >= 2) {
+      if (parts.length >= 4) {
         const ip = parts[0].trim();
         const port = parts[1].trim();
         if (/^\d+\.\d+\.\d+\.\d+$/.test(ip) && port === '443') {
-          proxies.push([ip, port]);
+          proxies.push({
+            ip: ip,
+            port: port,
+            country: parts[2].trim(),
+            city: '',
+            as: parts[3].trim()
+          });
         }
       }
     });
@@ -263,12 +231,18 @@ async function main() {
         if (!line || line.startsWith('IP Address') || line.startsWith('﻿IP Address')) continue;
 
         const parts = line.trim().split(',');
-        if (parts.length >= 2) {
+        if (parts.length >= 7) {
           const ip = parts[0].trim();
           const port = parts[1].trim();
 
           if (ip && port === '443' && /^\d+\.\d+\.\d+\.\d+$/.test(ip)) {
-            allProxySources.push([ip, port]);
+            allProxySources.push({
+              ip: ip,
+              port: port,
+              country: parts[4].trim(),
+              city: parts[5].trim(),
+              as: parts[6].trim()
+            });
           }
         }
       }
@@ -276,11 +250,10 @@ async function main() {
     }
 
     const nscl5Proxies = await fetchNscl5Proxies();
-
     allProxySources.push(...nscl5Proxies);
 
     const uniqueProxies = Array.from(
-      new Map(allProxySources.map(([ip, port]) => [`${ip}:${port}`, [ip, port]])).values(),
+      new Map(allProxySources.map(p => [`${p.ip}:${p.port}`, p])).values(),
     );
 
     console.log(`Total unique proxies from all sources: ${uniqueProxies.length}`);
@@ -297,11 +270,11 @@ async function main() {
     }
 
     console.log(
-      `Job ${chunkIndex + 1}/${totalChunks}: Testing ${proxiesToCheck.length} proxies on port 443 (indices ${startIndex}-${endIndex - 1})...`,
+      `Job ${chunkIndex + 1}/${totalChunks}: Testing ${proxiesToCheck.length} proxies (indices ${startIndex}-${endIndex - 1})...`,
     );
 
     const startTime = performance.now();
-    const workingProxies = await processProxiesInBatches(proxiesToCheck, 8);
+    const workingProxies = await processProxiesInBatches(proxiesToCheck, 20);
     const endTime = performance.now();
 
     console.log(
@@ -319,7 +292,7 @@ async function main() {
     console.log(`Total tested: ${proxiesToCheck.length}`);
     console.log(`Working proxies: ${workingProxies.length}`);
     console.log(
-      `Success rate: ${((workingProxies.length / proxiesToCheck.length) * 100).toFixed(2)}%`,
+      `Success rate: ${proxiesToCheck.length > 0 ? ((workingProxies.length / proxiesToCheck.length) * 100).toFixed(2) : '0.00'}%`,
     );
   } catch (error) {
     console.error('An unexpected error occurred in test-proxies.js:', error);
