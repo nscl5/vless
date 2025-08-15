@@ -258,6 +258,13 @@ async function main() {
 
     console.log(`Total unique proxies from all sources: ${uniqueProxies.length}`);
 
+    // Fisher-Yates shuffle algorithm to randomize the proxy list
+    for (let i = uniqueProxies.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [uniqueProxies[i], uniqueProxies[j]] = [uniqueProxies[j], uniqueProxies[i]];
+    }
+    console.log('Successfully shuffled the unique proxy list.');
+
     const chunkSize = Math.ceil(uniqueProxies.length / totalChunks);
     const startIndex = chunkIndex * chunkSize;
     const endIndex = Math.min(startIndex + chunkSize, uniqueProxies.length);
