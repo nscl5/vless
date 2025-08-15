@@ -665,7 +665,7 @@ class ContainerBroker(DatabaseBroker):
         """
         Create policy_stat table.
 
-        :param conn: DB connection object
+        :param conn: DB connection
         :param storage_policy_index: the policy_index the container is
                                      being created with
         """
@@ -712,12 +712,11 @@ class ContainerBroker(DatabaseBroker):
 
         conn.execute(
             """
-            CREATE TRIGGER shard_range_update BEFORE UPDATE ON %s
+            CREATE TRIGGER shard_range_update BEFORE UPDATE ON shard_range
             BEGIN
                 SELECT RAISE(FAIL, 'UPDATE not allowed; DELETE and INSERT');
             END;
         """
-            % SHARD_RANGE_TABLE
         )
 
     def get_db_version(self, conn):
@@ -1890,8 +1889,7 @@ class ContainerBroker(DatabaseBroker):
                 SELECT %s FROM container_stat;
 
                 DROP TABLE IF EXISTS container_stat;
-            """
-            % (column_names, column_names)
+            """ % (column_names, column_names)
             + CONTAINER_STAT_VIEW_SCRIPT
             + "COMMIT;"
         )
