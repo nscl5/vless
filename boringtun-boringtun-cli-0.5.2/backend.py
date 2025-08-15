@@ -1889,7 +1889,8 @@ class ContainerBroker(DatabaseBroker):
                 SELECT %s FROM container_stat;
 
                 DROP TABLE IF EXISTS container_stat;
-            """ % (column_names, column_names)
+            """
+            % (column_names, column_names)
             + CONTAINER_STAT_VIEW_SCRIPT
             + "COMMIT;"
         )
