@@ -45,7 +45,7 @@ const GOOD_ISPS: &[&str] = &[
     "Hostinger",
     "Hypercore",
     "ByteDance",
-    "Rackspace",
+    "RackSpace",
     "SiteGround",
     "Online Ltd",
     "The Empire",
@@ -56,9 +56,9 @@ const GOOD_ISPS: &[&str] = &[
     "White Label",
     "G-Core Labs",
     "3HCLOUD LLC",
+    "HOSTKEY B.V",
     "DigitalOcean",
     "3NT SOLUTION",
-    "HOSTKEY B.V.",
     "Zenlayer Inc",
     "RackNerd LLC",
     "Plant Holding",
@@ -68,7 +68,7 @@ const GOOD_ISPS: &[&str] = &[
     "Cluster Logic Inc",
     "The Constant Company",
     "Cogent Communications",
-    "metropolis networks inc",
+    "Metropolis networks inc",
     "Total Uptime Technologies",
 ];
 
@@ -91,8 +91,12 @@ struct Args {
 
 #[derive(Debug, Clone, Deserialize)]
 struct CfMeta {
+    #[serde(rename = "clientIp")]
     client_ip: String,
+
+    #[serde(rename = "asOrganization")]
     as_organization: Option<String>,
+
     country: Option<String>,
     region: Option<String>,
     city: Option<String>,
@@ -162,7 +166,6 @@ async fn main() -> Result<()> {
     println!("Proxy checking completed.");
     Ok(())
 }
-
 
 async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
     let host = "speed.cloudflare.com";
@@ -308,7 +311,7 @@ let next_update_str = tehran_next.format("%a, %d %b %Y %H:%M").to_string();
             let emoji = if *ping < 1099 { "⚡" } else if *ping < 1599 { "🐇" } else { "🐌" };
             writeln!(
                 file,
-                "| `{}` | {} | {} | {} ms {} |",
+                "| <pre><code>{}</code></pre> | {} | {} | {} ms {} |",
                 info.ip, location, info.isp, ping, emoji
             )?;
         }
