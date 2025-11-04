@@ -163,6 +163,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+
 async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
     let host = "speed.cloudflare.com";
     let url = format!("https://{}/meta", host);
@@ -174,11 +175,11 @@ async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
         .user_agent("RustProxyChecker");
 
     if let Some((ip, port)) = proxy {
-        let proxy_url = format!("http://{}:{}", ip, port); 
-        let proxy_obj = Proxy::all(&proxy_url)
-            .context(format!("Failed to create proxy object for {}", proxy_url))?;
+        let addr_str = format!("{}:{}", ip, port);
+        let addr: std::net::SocketAddr = addr_str.parse()
+            .context(format!("Invalid IP/port combination: {}", addr_str))?;
         
-        client_builder = client_builder.proxy(proxy_obj);
+        client_builder = client_builder.connect_to(host, addr);
     }
 
     let client = client_builder
@@ -186,6 +187,7 @@ async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
         .context("Failed to build reqwest client")?;
 
     let meta = client.get(&url)
+        .header("Host", host) 
         .send()
         .await
         .context("Failed to send request")?
@@ -195,7 +197,6 @@ async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
 
     Ok(meta)
 }
-
 
 async fn process_proxy(
     proxy_line: String,
