@@ -143,7 +143,6 @@ async fn main() -> Result<()> {
     let tasks = futures::stream::iter(
         proxies.into_iter().map(|proxy_line| {
             let active_proxies = Arc::clone(&active_proxies);
-            let args = args.clone();
             let self_ip = self_meta.clientIp.clone();
             async move {
                 tokio::time::sleep(Duration::from_millis(REQUEST_DELAY_MS)).await;
@@ -180,7 +179,7 @@ async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
             .parse()
             .context(format!("Invalid IP/port combination: {}", addr_str))?;
         
-        client_builder = client_builder.resolve_override(host, addr);
+        client_builder = client_builder.resolve(host, addr);
     }
 
     let client = client_builder
