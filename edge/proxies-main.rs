@@ -299,19 +299,21 @@ let next_update_str = tehran_next.format("%a, %d %b %Y %H:%M").to_string();
     )?;
 
     for (country, proxies) in proxies_by_country.iter() {
+        let mut sorted_proxies = proxies.clone();
+        sorted_proxies.sort_by_key(|&(_, ping)| ping);
         let flag = country_flag(country);
-        writeln!(file, "## {} {} ({} proxies)", flag, country, proxies.len())?;
+        writeln!(file, "## {} {} ({} proxies)", flag, country, sorted_proxies.len())?;
         writeln!(file, "<details open>")?;
         writeln!(file, "<summary>Click to collapse</summary>\n")?;
         writeln!(file, "|   IP   |  Location   |   ISP   |   Ping   |")?;
         writeln!(file, "|:-------|:------------|:-------:|:--------:|")?;
 
-        for (info, ping) in proxies.iter() {
+        for (info, ping) in sorted_proxies.iter() {
             let location = format!("{}, {}", info.region, info.city);
             let emoji = if *ping < 1099 { "⚡" } else if *ping < 1599 { "🐇" } else { "🐌" };
             writeln!(
                 file,
-                "| <pre><code>{}</code></pre> | {} | {} | {} ms {} |",
+                "| `{}` | {} | {} | {} ms {} |",
                 info.ip, location, info.isp, ping, emoji
             )?;
         }
