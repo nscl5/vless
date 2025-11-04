@@ -15,7 +15,7 @@ use reqwest::{Client};
 
 const DEFAULT_PROXY_FILE: &str = "edge/assets/p-list-november.txt";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
-const DEFAULT_MAX_CONCURRENT: usize = 60;
+const DEFAULT_MAX_CONCURRENT: usize = 50;
 const DEFAULT_TIMEOUT_SECONDS: u64 = 6;
 const REQUEST_DELAY_MS: u64 = 40;
 
@@ -155,7 +155,8 @@ async fn main() -> Result<()> {
 
     tasks.await;
 
-    write_markdown_file(&active_proxies.lock().unwrap(), &args.output_file)
+    let locked_proxies = active_proxies.lock().unwrap_or_else(|e| e.into_inner());
+    write_markdown_file(&locked_proxies, &args.output_file)
         .context("Failed to write Markdown file")?;
 
     println!("Proxy checking completed.");
@@ -223,7 +224,8 @@ async fn process_proxy(
                     city: meta.city.unwrap_or_else(|| "Unknown".to_string()),
                 };
                 println!("{}", format!("PROXY LIVE 🟩: {} ({} ms)", ip, ping).green());
-                let mut active_proxies_locked = active_proxies.lock().unwrap();
+                let mut active_proxies_locked = active_proxies.lock().unwrap_or_else(|e| e.into_inner());
+
                 active_proxies_locked
                     .entry(info.country.clone())
                     .or_default()
@@ -306,7 +308,7 @@ let next_update_str = tehran_next.format("%a, %d %b %Y %H:%M").to_string();
             let emoji = if *ping < 1099 { "⚡" } else if *ping < 1599 { "🐇" } else { "🐌" };
             writeln!(
                 file,
-                "| <pre><code>{}</code></pre> | {} | {} | {} ms {} |",
+                "| `{}` | {} | {} | {} ms {} |",
                 info.ip, location, info.isp, ping, emoji
             )?;
         }
