@@ -15,9 +15,9 @@ use reqwest::{Client};
 
 const DEFAULT_PROXY_FILE: &str = "edge/assets/p-list-november.txt";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
-const DEFAULT_MAX_CONCURRENT: usize = 90;
-const DEFAULT_TIMEOUT_SECONDS: u64 = 8;
-const REQUEST_DELAY_MS: u64 = 50;
+const DEFAULT_MAX_CONCURRENT: usize = 60;
+const DEFAULT_TIMEOUT_SECONDS: u64 = 6;
+const REQUEST_DELAY_MS: u64 = 40;
 
 const GOOD_ISPS: &[&str] = &[
     "OVH",
@@ -91,8 +91,8 @@ struct Args {
 
 #[derive(Debug, Clone, Deserialize)]
 struct CfMeta {
-    clientIp: String,
-    asOrganization: Option<String>,
+    client_ip: String,
+    as_organization: Option<String>,
     country: Option<String>,
     region: Option<String>,
     city: Option<String>,
@@ -136,14 +136,14 @@ async fn main() -> Result<()> {
     println!("Filtered to {} good proxies (port 443 + ISP whitelist)", proxies.len());
 
     let self_meta = fetch_cf_meta(None).await?;
-    println!("Your real IP: {}", self_meta.clientIp);
+    println!("Your real IP: {}", self_meta.client_ip);
 
     let active_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<(ProxyInfo, u128)>>::new()));
 
     let tasks = futures::stream::iter(
         proxies.into_iter().map(|proxy_line| {
             let active_proxies = Arc::clone(&active_proxies);
-            let self_ip = self_meta.clientIp.clone();
+            let self_ip = self_meta.client_ip.clone();
             async move {
                 tokio::time::sleep(Duration::from_millis(REQUEST_DELAY_MS)).await;
                 process_proxy(proxy_line, &active_proxies, &self_ip).await;
@@ -213,11 +213,11 @@ async fn process_proxy(
     let start = Instant::now();
     match fetch_cf_meta(Some((ip.to_string(), port))).await {
         Ok(meta) => {
-            if meta.clientIp != self_ip {
+            if meta.client_ip != self_ip {
                 let ping = start.elapsed().as_millis();
                 let info = ProxyInfo {
-                    ip: meta.clientIp.clone(),
-                    isp: meta.asOrganization.unwrap_or_else(|| "Unknown".to_string()),
+                    ip: meta.client_ip.clone(),
+                    isp: meta.as_organization.unwrap_or_else(|| "Unknown".to_string()),
                     country: meta.country.unwrap_or_else(|| "Unknown".to_string()),
                     region: meta.region.unwrap_or_else(|| "Unknown".to_string()),
                     city: meta.city.unwrap_or_else(|| "Unknown".to_string()),
@@ -306,7 +306,7 @@ let next_update_str = tehran_next.format("%a, %d %b %Y %H:%M").to_string();
             let emoji = if *ping < 1099 { "⚡" } else if *ping < 1599 { "🐇" } else { "🐌" };
             writeln!(
                 file,
-                "| `{}` | {} | {} | {} ms {} |",
+                "| <pre><code>{}</code></pre> | {} | {} | {} ms {} |",
                 info.ip, location, info.isp, ping, emoji
             )?;
         }
