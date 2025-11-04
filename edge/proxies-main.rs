@@ -147,7 +147,7 @@ async fn main() -> Result<()> {
             let self_ip = self_meta.clientIp.clone();
             async move {
                 tokio::time::sleep(Duration::from_millis(REQUEST_DELAY_MS)).await;
-                process_proxy(proxy_line, &active_proxies, &args, &self_ip).await;
+                process_proxy(proxy_line, &active_proxies, &self_ip).await;
             }
         })
     )
@@ -170,24 +170,25 @@ async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
 
     let timeout_duration = Duration::from_secs(DEFAULT_TIMEOUT_SECONDS);
 
-    let client = Client::builder()
+    let mut client_builder = Client::builder()
         .timeout(timeout_duration)
-        .user_agent("RustProxyChecker")
-        .build()
-        .context("Failed to build reqwest client")?;
-
-    let mut request_builder = client.get(&url).header("Host", host);
+        .user_agent("RustProxyChecker");
 
     if let Some((ip, port)) = proxy {
         let addr_str = format!("{}:{}", ip, port);
         let addr: std::net::SocketAddr = addr_str
             .parse()
             .context(format!("Invalid IP/port combination: {}", addr_str))?;
-
-        request_builder = request_builder.connect_to(addr);
+        
+        client_builder = client_builder.resolve_override(host, addr);
     }
 
-    let meta = request_builder
+    let client = client_builder
+        .build()
+        .context("Failed to build reqwest client")?;
+
+    let meta = client.get(&url)
+        .header("Host", host)
         .send()
         .await
         .context("Failed to send request")?
