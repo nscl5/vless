@@ -15,8 +15,8 @@ use reqwest::{Client};
 
 const DEFAULT_PROXY_FILE: &str = "edge/assets/p-list-november.txt";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
-const DEFAULT_MAX_CONCURRENT: usize = 150;
-const DEFAULT_TIMEOUT_SECONDS: u64 = 4;
+const DEFAULT_MAX_CONCURRENT: usize = 90;
+const DEFAULT_TIMEOUT_SECONDS: u64 = 8;
 const REQUEST_DELAY_MS: u64 = 50;
 
 const GOOD_ISPS: &[&str] = &[
@@ -306,7 +306,7 @@ let next_update_str = tehran_next.format("%a, %d %b %Y %H:%M").to_string();
             let emoji = if *ping < 1099 { "⚡" } else if *ping < 1599 { "🐇" } else { "🐌" };
             writeln!(
                 file,
-                "| <pre><code>{}</code></pre> | {} | {} | {} ms {} |",
+                "| `{}` | {} | {} | {} ms {} |",
                 info.ip, location, info.isp, ping, emoji
             )?;
         }
