@@ -11,7 +11,7 @@ use chrono::{Duration as ChronoDuration, Utc};
 use chrono_tz::Asia::Tehran;
 use colored::*;
 use futures::StreamExt;
-use reqwest::{Client, Proxy};
+use reqwest::{Client};
 
 const DEFAULT_PROXY_FILE: &str = "edge/assets/p-list-november.txt";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
@@ -170,24 +170,24 @@ async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
 
     let timeout_duration = Duration::from_secs(DEFAULT_TIMEOUT_SECONDS);
 
-    let mut client_builder = Client::builder()
+    let client = Client::builder()
         .timeout(timeout_duration)
-        .user_agent("RustProxyChecker");
-
-    if let Some((ip, port)) = proxy {
-        let addr_str = format!("{}:{}", ip, port);
-        let addr: std::net::SocketAddr = addr_str.parse()
-            .context(format!("Invalid IP/port combination: {}", addr_str))?;
-        
-        client_builder = client_builder.connect_to(host, addr);
-    }
-
-    let client = client_builder
+        .user_agent("RustProxyChecker")
         .build()
         .context("Failed to build reqwest client")?;
 
-    let meta = client.get(&url)
-        .header("Host", host) 
+    let mut request_builder = client.get(&url).header("Host", host);
+
+    if let Some((ip, port)) = proxy {
+        let addr_str = format!("{}:{}", ip, port);
+        let addr: std::net::SocketAddr = addr_str
+            .parse()
+            .context(format!("Invalid IP/port combination: {}", addr_str))?;
+
+        request_builder = request_builder.connect_to(addr);
+    }
+
+    let meta = request_builder
         .send()
         .await
         .context("Failed to send request")?
@@ -201,7 +201,6 @@ async fn fetch_cf_meta(proxy: Option<(String, u16)>) -> Result<CfMeta> {
 async fn process_proxy(
     proxy_line: String,
     active_proxies: &Arc<Mutex<BTreeMap<String, Vec<(ProxyInfo, u128)>>>>,
-    args: &Args,
     self_ip: &str,
 ) {
     let parts: Vec<&str> = proxy_line.split(',').collect();
