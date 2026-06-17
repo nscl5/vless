@@ -81,7 +81,9 @@ def load_cached_keys():
                     return []
                 return json.loads(content)
         except json.JSONDecodeError:
-            logger.warning(f"Cache file {CACHE_FILE_PATH} is corrupted. Starting fresh.")
+            logger.warning(
+                f"Cache file {CACHE_FILE_PATH} is corrupted. Starting fresh."
+            )
             return []
         except IOError as e:
             logger.error(f"Error reading cache file {CACHE_FILE_PATH}: {e}")
@@ -131,13 +133,17 @@ def register_key_on_CF(pub_key):
     try:
         url = "https://api.cloudflareclient.com/v0a4005/reg"
         install_id = base64.b64encode(os.urandom(12)).decode("utf-8")
-        fcm_token = f"{install_id}:APA91b{base64.b64encode(os.urandom(138)).decode('utf-8')}"
+        fcm_token = (
+            f"{install_id}:APA91b{base64.b64encode(os.urandom(138)).decode('utf-8')}"
+        )
         body = {
             "key": pub_key,
             "install_id": install_id,
             "fcm_token": fcm_token,
             "warp_enabled": True,
-            "tos": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+            "tos": datetime.datetime.now(datetime.timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z"),
             "type": "Android",
             "model": "PC",
             "locale": "en_US",
@@ -150,7 +156,9 @@ def register_key_on_CF(pub_key):
             "User-Agent": "okhttp/3.12.1",
         }
         time.sleep(random.uniform(1.5, 2.5))
-        with requests.post(url, data=json.dumps(body), headers=headers, timeout=25) as r:
+        with requests.post(
+            url, data=json.dumps(body), headers=headers, timeout=25
+        ) as r:
             if r.status_code == 429:
                 logger.warning(f"Rate limit hit (429). Headers: {r.headers}")
                 retry_after = r.headers.get("Retry-After")
@@ -180,12 +188,18 @@ def bind_keys(key_type):
         interface_v4 = key_data.get("interface_v4")
         interface_v6 = key_data.get("interface_v6")
         if private_key and reserved_value:
-            logger.info(f"Using cached {key_type} key starting with: {private_key[:10]}...")
+            logger.info(
+                f"Using cached {key_type} key starting with: {private_key[:10]}..."
+            )
             return private_key, reserved_value, interface_v4, interface_v6
         else:
-            logger.warning(f"Found incomplete cached key data for {key_type}. Generating new key.")
+            logger.warning(
+                f"Found incomplete cached key data for {key_type}. Generating new key."
+            )
 
-    logger.info(f"No valid cached key found for type '{key_type}'. Generating and registering a new key.")
+    logger.info(
+        f"No valid cached key found for type '{key_type}'. Generating and registering a new key."
+    )
     priv_bytes = generate_private_key()
     priv_string = byte_to_base64(priv_bytes)
     pub_bytes = generate_public_key(priv_bytes)
@@ -207,8 +221,12 @@ def bind_keys(key_type):
                     logger.error("Could not find 'client_id' in API response.")
                     sys.exit(1)
 
-                logger.info(f"Successfully registered {key_type} with client_id: ...{client_id[-10:]}")
-                logger.info(f"Interface IPs received: v4={interface_v4}, v6={interface_v6}")
+                logger.info(
+                    f"Successfully registered {key_type} with client_id: ...{client_id[-10:]}"
+                )
+                logger.info(
+                    f"Interface IPs received: v4={interface_v4}, v6={interface_v6}"
+                )
 
                 new_key_data = {
                     "type": key_type,
@@ -216,7 +234,9 @@ def bind_keys(key_type):
                     "reserved": client_id,
                     "interface_v4": interface_v4,
                     "interface_v6": interface_v6,
-                    "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                    "timestamp": datetime.datetime.now(
+                        datetime.timezone.utc
+                    ).isoformat(),
                 }
                 cached_keys.append(new_key_data)
                 save_cached_keys(cached_keys)
@@ -228,10 +248,14 @@ def bind_keys(key_type):
         else:
             status = result.status_code if result else "N/A"
             text = result.text if result else "No response object"
-            logger.error(f"API request failed after retries with status {status}: {text}")
+            logger.error(
+                f"API request failed after retries with status {status}: {text}"
+            )
             sys.exit(1)
     except Exception as e:
-        logger.error(f"Cloudflare API registration failed for {key_type}: {e}", exc_info=True)
+        logger.error(
+            f"Cloudflare API registration failed for {key_type}: {e}", exc_info=True
+        )
         sys.exit(1)
 
 
@@ -276,17 +300,23 @@ def main():
                 config_template_dict = yaml.safe_load(f)
             logger.info("Config template loaded successfully")
         except IOError as e:
-            logger.error(f"Error reading config template file '{CONFIG_TEMPLATE_PATH}': {e}")
+            logger.error(
+                f"Error reading config template file '{CONFIG_TEMPLATE_PATH}': {e}"
+            )
             sys.exit(1)
         except yaml.YAMLError as e:
-            logger.error(f"Invalid YML syntax in config file '{CONFIG_TEMPLATE_PATH}': {e}")
+            logger.error(
+                f"Invalid YML syntax in config file '{CONFIG_TEMPLATE_PATH}': {e}"
+            )
             sys.exit(1)
 
         logger.info("Binding keys for Entry proxies...")
         priv_key_entry, reserved_entry, ip_v4_entry, ip_v6_entry = bind_keys("entry")
 
         logger.info("Binding keys for Dialer proxies...")
-        priv_key_dialer, reserved_dialer, ip_v4_dialer, ip_v6_dialer = bind_keys("dialer")
+        priv_key_dialer, reserved_dialer, ip_v4_dialer, ip_v6_dialer = bind_keys(
+            "dialer"
+        )
 
         ip_entry = "172.16.0.2/32"
         ip_dialer = "172.16.0.3/32"
@@ -397,11 +427,16 @@ def main():
                 updated_rules.append(f"MATCH,{MAIN_SELECTOR_GROUP_NAME}")
             config_template_dict["rules"] = updated_rules
 
-        if "dns" in config_template_dict and "nameserver" in config_template_dict["dns"]:
+        if (
+            "dns" in config_template_dict
+            and "nameserver" in config_template_dict["dns"]
+        ):
             if config_template_dict["dns"]["nameserver"]:
                 parts = config_template_dict["dns"]["nameserver"][0].split("#")
                 if len(parts) >= 1:
-                    config_template_dict["dns"]["nameserver"][0] = f"{parts[0]}#{MAIN_SELECTOR_GROUP_NAME}"
+                    config_template_dict["dns"]["nameserver"][0] = (
+                        f"{parts[0]}#{MAIN_SELECTOR_GROUP_NAME}"
+                    )
             else:
                 logger.warning("DNS nameserver list is empty in template.")
 
@@ -427,11 +462,15 @@ def main():
             logger.error(f"Error writing to file '{OUTPUT_YAML_FILENAME}': {e}")
             sys.exit(1)
         except Exception as e:
-            logger.error(f"An unexpected error occurred while writing YAML: {e}", exc_info=True)
+            logger.error(
+                f"An unexpected error occurred while writing YAML: {e}", exc_info=True
+            )
             sys.exit(1)
 
     except Exception as e:
-        logger.error(f"Unexpected error occurred in script execution: {e}", exc_info=True)
+        logger.error(
+            f"Unexpected error occurred in script execution: {e}", exc_info=True
+        )
         sys.exit(1)
 
 
