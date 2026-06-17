@@ -10,8 +10,7 @@ unified-delay: true
 geo-auto-update: true
 geo-update-interval: 168
 
-# External Controller & UI
-external-controller: 127.0.0.1:9090
+# External Controller & UIexternal-controller: 127.0.0.1:9090
 external-ui-url: https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip
 external-ui: ui
 external-controller-cors:
@@ -47,7 +46,7 @@ dns:
 # TUN Settings
 tun:
   enable: true
-  stack: system
+  stack: mixed
   auto-route: true
   strict-route: true
   endpoint-independent-nat: false
@@ -151,7 +150,6 @@ rules:
   - RULE-SET,private-cidr,DIRECT,no-resolve
   - RULE-SET,ir,DIRECT
   - RULE-SET,ir-cidr,DIRECT,no-resolve
-  - GEOIP,lan,DIRECT,no-resolve
   - MATCH,⚪ PROXIES
 
 ntp:
