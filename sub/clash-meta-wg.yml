@@ -1,5 +1,5 @@
 # Generated configs for clash-meta with WireGuard proxies that have amnesia values.
-# Time is: 2026-06-17T20:57:10.491940
+# Time is: 2026-06-17T21:20:33.085644
 
 mixed-port: 7890
 ipv6: true
@@ -24,21 +24,25 @@ profile:
   store-fake-ip: true
 dns:
   enable: true
-  listen: 0.0.0.0:1053
   ipv6: false
+  listen: 127.0.0.1:1053
   respect-rules: true
   use-system-hosts: false
   nameserver:
   - 1.1.1.1#⚪ PROXIES
   proxy-server-nameserver:
   - 8.8.8.8#DIRECT
+  direct-nameserver:
+  - 8.8.8.8#DIRECT
+  direct-nameserver-follow-policy: true
   nameserver-policy:
-    raw.githubusercontent.com: 8.8.8.8#DIRECT
-    time.apple.com: 8.8.8.8#DIRECT
     rule-set:ir: 8.8.8.8#DIRECT
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
+  fake-ip-filter-mode: blacklist
   fake-ip-filter:
+  - +.lan
+  - +.local
   - geosite:private
 tun:
   enable: true
@@ -79,13 +83,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: 4NnSnRPIGhcjoWd7238mKP3UXoGvVr5bYJc3huYGUWU=
-  server: 8.6.112.177
-  port: 7281
+  private-key: 6CjvXM7gP/xefLIHQTMtjdoYq3FibOuD1baj36mayGs=
+  server: 8.6.112.188
+  port: 864
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: qZml
+  reserved: 4+0B
   udp: true
   mtu: 1280
   dialer-proxy: IR-ENTRY-01
@@ -93,13 +97,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: qNF884ZwQ+I4Ahgroj48Kqt/QF4/AKq34/ZC1lA4b0Q=
-  server: 8.6.112.206
-  port: 8742
+  private-key: UJC/edZYLZ40fLMKWxctvXTHfoCR4lkBjp04XwM+bHE=
+  server: 8.6.112.147
+  port: 891
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: gLbY
+  reserved: gCLC
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -110,13 +114,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: 4NnSnRPIGhcjoWd7238mKP3UXoGvVr5bYJc3huYGUWU=
-  server: 8.6.112.198
-  port: 968
+  private-key: 6CjvXM7gP/xefLIHQTMtjdoYq3FibOuD1baj36mayGs=
+  server: 8.6.112.62
+  port: 934
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: qZml
+  reserved: 4+0B
   udp: true
   mtu: 1280
   dialer-proxy: IR-ENTRY-02
@@ -124,13 +128,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: qNF884ZwQ+I4Ahgroj48Kqt/QF4/AKq34/ZC1lA4b0Q=
-  server: 188.114.97.235
-  port: 908
+  private-key: UJC/edZYLZ40fLMKWxctvXTHfoCR4lkBjp04XwM+bHE=
+  server: 8.6.112.10
+  port: 1014
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: gLbY
+  reserved: gCLC
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -141,13 +145,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: 4NnSnRPIGhcjoWd7238mKP3UXoGvVr5bYJc3huYGUWU=
-  server: 188.114.97.229
-  port: 955
+  private-key: 6CjvXM7gP/xefLIHQTMtjdoYq3FibOuD1baj36mayGs=
+  server: 188.114.97.218
+  port: 4233
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: qZml
+  reserved: 4+0B
   udp: true
   mtu: 1280
   dialer-proxy: IR-ENTRY-03
@@ -155,13 +159,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: qNF884ZwQ+I4Ahgroj48Kqt/QF4/AKq34/ZC1lA4b0Q=
-  server: 8.6.112.185
-  port: 3138
+  private-key: UJC/edZYLZ40fLMKWxctvXTHfoCR4lkBjp04XwM+bHE=
+  server: 8.6.112.91
+  port: 1074
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: gLbY
+  reserved: gCLC
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -172,13 +176,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: 4NnSnRPIGhcjoWd7238mKP3UXoGvVr5bYJc3huYGUWU=
-  server: 188.114.97.11
-  port: 908
+  private-key: 6CjvXM7gP/xefLIHQTMtjdoYq3FibOuD1baj36mayGs=
+  server: 188.114.97.174
+  port: 4177
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: qZml
+  reserved: 4+0B
   udp: true
   mtu: 1280
   dialer-proxy: IR-ENTRY-04
@@ -186,13 +190,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: qNF884ZwQ+I4Ahgroj48Kqt/QF4/AKq34/ZC1lA4b0Q=
-  server: 8.6.112.148
-  port: 8319
+  private-key: UJC/edZYLZ40fLMKWxctvXTHfoCR4lkBjp04XwM+bHE=
+  server: 188.114.97.197
+  port: 2506
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: gLbY
+  reserved: gCLC
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -203,13 +207,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: 4NnSnRPIGhcjoWd7238mKP3UXoGvVr5bYJc3huYGUWU=
-  server: 188.114.97.12
-  port: 854
+  private-key: 6CjvXM7gP/xefLIHQTMtjdoYq3FibOuD1baj36mayGs=
+  server: 8.6.112.217
+  port: 500
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: qZml
+  reserved: 4+0B
   udp: true
   mtu: 1280
   dialer-proxy: IR-ENTRY-05
@@ -217,13 +221,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: qNF884ZwQ+I4Ahgroj48Kqt/QF4/AKq34/ZC1lA4b0Q=
-  server: 8.6.112.43
-  port: 891
+  private-key: UJC/edZYLZ40fLMKWxctvXTHfoCR4lkBjp04XwM+bHE=
+  server: 8.6.112.109
+  port: 5956
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: gLbY
+  reserved: gCLC
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -234,13 +238,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: 4NnSnRPIGhcjoWd7238mKP3UXoGvVr5bYJc3huYGUWU=
-  server: 8.6.112.217
-  port: 859
+  private-key: 6CjvXM7gP/xefLIHQTMtjdoYq3FibOuD1baj36mayGs=
+  server: 188.114.97.24
+  port: 4177
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: qZml
+  reserved: 4+0B
   udp: true
   mtu: 1280
   dialer-proxy: IR-ENTRY-06
@@ -248,13 +252,13 @@ proxies:
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: qNF884ZwQ+I4Ahgroj48Kqt/QF4/AKq34/ZC1lA4b0Q=
-  server: 8.6.112.40
-  port: 3581
+  private-key: UJC/edZYLZ40fLMKWxctvXTHfoCR4lkBjp04XwM+bHE=
+  server: 8.6.112.102
+  port: 3854
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
   - 0.0.0.0/0
-  reserved: gLbY
+  reserved: gCLC
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -374,6 +378,7 @@ rules:
 - RULE-SET,private-cidr,DIRECT,no-resolve
 - RULE-SET,ir,DIRECT
 - RULE-SET,ir-cidr,DIRECT,no-resolve
+- GEOIP,lan,DIRECT,no-resolve
 - MATCH,⚪ PROXIES
 ntp:
   enable: true
