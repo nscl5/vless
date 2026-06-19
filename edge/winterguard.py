@@ -420,11 +420,11 @@ def main():
                 "name": MAIN_SELECTOR_GROUP_NAME,
                 "type": "select",
                 "proxies": [
-                    ENTRY_URL_TEST_GROUP_NAME,
                     DIALER_URL_TEST_GROUP_NAME,
+                    ENTRY_URL_TEST_GROUP_NAME,
                     "DIRECT",
-                    *entry_proxy_names,
                     *dialer_proxy_names,
+                    *entry_proxy_names,
                 ],
             },
             {
