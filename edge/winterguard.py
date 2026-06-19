@@ -17,20 +17,31 @@ from tenacity import (
     retry_if_exception,
 )
 
-NUM_PROXY_PAIRS = int(os.environ.get("NUM_PROXY_PAIRS", 6))
+NUM_PROXY_PAIRS = int(
+    os.environ.get("NUM_PROXY_PAIRS", 6)
+)  # Number of proxy pairs to generate
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+SCRIPT_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)  # the (SCRIPT_DIR) = where the script is running, in this case: path:vless/edge
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
 
-CONFIG_TEMPLATE_PATH = os.path.join(SCRIPT_DIR, "assets", "clash-meta-wg-template.yml")
-CACHE_FILE_PATH = os.path.join(PARENT_DIR, "sub", "key_cache.json")
-OUTPUT_YAML_FILENAME = os.path.join(PARENT_DIR, "sub", "clash-meta-wg.yml")
+CONFIG_TEMPLATE_PATH = os.path.join(
+    SCRIPT_DIR, "assets", "clash-meta-wg-template.yml"
+)  # Path to the template file
+CACHE_FILE_PATH = os.path.join(
+    PARENT_DIR, "sub", "key_cache.json"
+)  # Path for caching generated keys
+OUTPUT_YAML_FILENAME = os.path.join(
+    PARENT_DIR, "sub", "clash-meta-wg.yml"
+)  # Output YML filename
 
+# --- Proxy Naming Configuration ---
 DIALER_PROXY_BASE_NAME = os.environ.get("DIALER_PROXY_BASE_NAME", "IR-DIALER")
 ENTRY_PROXY_BASE_NAME = os.environ.get("ENTRY_PROXY_BASE_NAME", "EU-ENTRY")
-MAIN_SELECTOR_GROUP_NAME = os.environ.get("MAIN_SELECTOR_GROUP_NAME", "⚪ PROXIES")
-DIALER_URL_TEST_GROUP_NAME = f"🇮🇷 AUTO-{DIALER_PROXY_BASE_NAME}"
-ENTRY_URL_TEST_GROUP_NAME = f"🇪🇺 AUTO-{ENTRY_PROXY_BASE_NAME}"
+MAIN_SELECTOR_GROUP_NAME = os.environ.get("MAIN_SELECTOR_GROUP_NAME", "⚪PROXIES")
+DIALER_URL_TEST_GROUP_NAME = f"🇮🇷AUTO-{DIALER_PROXY_BASE_NAME}"
+ENTRY_URL_TEST_GROUP_NAME = f"🇪🇺AUTO-{ENTRY_PROXY_BASE_NAME}"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,14 +51,17 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+# Custom exception for rate limiting
 class RateLimitError(Exception):
     pass
 
 
+# Function to encode bytes to base64
 def byte_to_base64(myb):
     return base64.b64encode(myb).decode("utf-8")
 
 
+# Function to generate a public key from private key bytes
 def generate_public_key(key_bytes):
     private_key = X25519PrivateKey.from_private_bytes(key_bytes)
     public_key = private_key.public_key()
@@ -57,6 +71,7 @@ def generate_public_key(key_bytes):
     )
 
 
+# Function to generate a new private key with specific bit manipulations
 def generate_private_key():
     logger.info("Generating new private key...")
     private_key = X25519PrivateKey.generate()
@@ -72,6 +87,7 @@ def generate_private_key():
     return bytes(key)
 
 
+# Load cached keys
 def load_cached_keys():
     if os.path.exists(CACHE_FILE_PATH):
         try:
@@ -91,6 +107,7 @@ def load_cached_keys():
     return []
 
 
+# Save cached keys
 def save_cached_keys(keys):
     try:
         os.makedirs(os.path.dirname(CACHE_FILE_PATH), exist_ok=True)
@@ -101,6 +118,7 @@ def save_cached_keys(keys):
         logger.error(f"Error writing cache file {CACHE_FILE_PATH}: {e}")
 
 
+# Function to register a public key with Cloudflare API using tenacity for retries
 def should_retry(exception):
     if isinstance(exception, RateLimitError):
         return True
@@ -177,6 +195,7 @@ def register_key_on_CF(pub_key):
         raise
 
 
+# Function to generate and register private/public key pair, using cache
 def bind_keys(key_type):
     cached_keys = load_cached_keys()
     matching_keys = [k for k in cached_keys if k.get("type") == key_type]
@@ -259,20 +278,35 @@ def bind_keys(key_type):
         sys.exit(1)
 
 
+# IPv4 prefixes for generating endpoints
 ipv4_prefixes = [
     "8.6.112.",
+    #   "8.34.70.",
+    #   "8.34.146.",
+    #   "8.35.211.",
+    #   "8.39.125.",
+    #   "8.39.204.",
+    #   "8.39.214.",
+    #   "8.47.69.",
+    #   "162.159.192.",
+    #   "162.159.195.",
+    #   "188.114.96.",
     "188.114.97.",
+    #   "188.114.98.",
+    #   "188.114.99.",
 ]
 
+# Available ports for endpoint generation
 ports_str = os.environ.get(
     "AVAILABLE_PORTS",
     "500 854 859 864 878 880 890 891 894 903 908 928 934 939 942 943 945 946 955 968 987 988 1002 1010 1014 1018 1070 1074 1180 1387 1701 1843 2371 2408 2506 3138 3476 3581 3854 4177 4198 4233 4500 5279 5956 7103 7152 7156 7281 7559 8319 8742 8854 8886",
 )
 available_ports = [int(p) for p in ports_str.split()]
-
+# Cloudflare's fixed public key for WireGuard
 CLOUDFLARE_PUBLIC_KEY = "bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo="
 
 
+# Function to generate a random IPv4 endpoint
 def generate_ipv4_endpoint():
     prefix = random.choice(ipv4_prefixes)
     last_octet = random.randint(1, 254)
@@ -281,6 +315,7 @@ def generate_ipv4_endpoint():
     return server, port
 
 
+# --- Main Logic ---
 def main():
     try:
         if os.path.exists(CACHE_FILE_PATH):
@@ -294,6 +329,7 @@ def main():
                     logger.error(f"Error deleting cache file: {e}")
                     logger.warning("Continuing with existing cache file.")
 
+        # Load the base configuration template (YAML format)
         logger.info(f"Loading config template from {CONFIG_TEMPLATE_PATH}")
         try:
             with open(CONFIG_TEMPLATE_PATH, "r", encoding="utf-8") as f:
@@ -318,6 +354,7 @@ def main():
             "dialer"
         )
 
+        # Prepare unique interface IPs, adding CIDR notation (IPv4 only)
         ip_entry = "172.16.0.2/32"
         ip_dialer = "172.16.0.3/32"
 
@@ -329,7 +366,7 @@ def main():
         for i in range(NUM_PROXY_PAIRS):
             pair_num = i + 1
 
-            # EU-DIALER: direct connection to Cloudflare, no dialer-proxy
+            # IR-DIALER: direct connection to Cloudflare, no dialer-proxy
             dialer_proxy_name = f"{DIALER_PROXY_BASE_NAME}-{pair_num:02d}"
             dialer_proxy_names.append(dialer_proxy_name)
             server_dialer, port_dialer = generate_ipv4_endpoint()
@@ -351,7 +388,7 @@ def main():
             }
             proxies_list.append(dialer_proxy)
 
-            # IR-ENTRY: tunneled through EU-DIALER via dialer-proxy
+            # EU-ENTRY: tunneled through EU-DIALER via dialer-proxy
             entry_proxy_name = f"{ENTRY_PROXY_BASE_NAME}-{pair_num:02d}"
             entry_proxy_names.append(entry_proxy_name)
             server_entry, port_entry = generate_ipv4_endpoint()
@@ -373,8 +410,10 @@ def main():
             }
             proxies_list.append(entry_proxy)
 
+        # Add the generated proxies to the template dictionary
         config_template_dict["proxies"] = proxies_list
 
+        # --- Create Proxy Groups Dynamically ---
         logger.info("Creating proxy groups...")
         proxy_groups = [
             {
@@ -389,7 +428,7 @@ def main():
                 ],
             },
             {
-                # url-test on EU-DIALER (direct, no chain dependency) → always reachable
+                # url-test on IR-DIALER (direct, no chain dependency) → always reachable
                 "name": DIALER_URL_TEST_GROUP_NAME,
                 "type": "url-test",
                 "url": "https://www.gstatic.com/generate_204",
@@ -400,7 +439,7 @@ def main():
                 "proxies": dialer_proxy_names,
             },
             {
-                # url-test on IR-ENTRY (goes through EU-DIALER, tests full Entry chain)
+                # url-test on EU-ENTRY (goes through IR-DIALER, tests full Entry chain)
                 "name": ENTRY_URL_TEST_GROUP_NAME,
                 "type": "url-test",
                 "url": "https://www.gstatic.com/generate_204",
@@ -440,6 +479,7 @@ def main():
             else:
                 logger.warning("DNS nameserver list is empty in template.")
 
+        # --- Write Output YAML File ---
         logger.info(f"Writing output to {OUTPUT_YAML_FILENAME}")
         try:
             os.makedirs(os.path.dirname(OUTPUT_YAML_FILENAME), exist_ok=True)
@@ -449,7 +489,7 @@ def main():
 
             with open(OUTPUT_YAML_FILENAME, "w", encoding="utf-8") as f:
                 f.write(header_comment)
-                yaml.dump(
+                yaml.dump(  # Dump the dictionary as YAML
                     config_template_dict,
                     f,
                     allow_unicode=True,
