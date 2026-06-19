@@ -10,7 +10,8 @@ unified-delay: true
 geo-auto-update: true
 geo-update-interval: 168
 
-# External Controller & UIexternal-controller: 127.0.0.1:9090
+# External Controller & UI
+external-controller: 127.0.0.1:9090
 external-ui-url: https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip
 external-ui: ui
 external-controller-cors:
@@ -22,19 +23,21 @@ profile:
   store-fake-ip: true
 dns:
   enable: true
-  ipv6: false
   listen: 127.0.0.1:1053
+  ipv6: false
   respect-rules: true
   use-system-hosts: false
   nameserver:
-    - 1.1.1.1#⚪ PROXIES
+    - 1.1.1.1#🇮🇷AUTO-IR-DIALER
   proxy-server-nameserver:
     - 8.8.8.8#DIRECT
   direct-nameserver:
     - 8.8.8.8#DIRECT
   direct-nameserver-follow-policy: true
   nameserver-policy:
-    "rule-set:ir": 8.8.8.8#DIRECT
+    raw.githubusercontent.com: 8.8.8.8#DIRECT
+    time.apple.com: 8.8.8.8#DIRECT
+    rule-set:ir: 8.8.8.8#DIRECT
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
@@ -150,7 +153,7 @@ rules:
   - RULE-SET,private-cidr,DIRECT,no-resolve
   - RULE-SET,ir,DIRECT
   - RULE-SET,ir-cidr,DIRECT,no-resolve
-  - MATCH,⚪ PROXIES
+  - MATCH,⚪PROXIES
 
 ntp:
   enable: true
