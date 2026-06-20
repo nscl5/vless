@@ -9,8 +9,6 @@ keep-alive-interval: 15
 unified-delay: true
 geo-auto-update: true
 geo-update-interval: 168
-
-# External Controller & UI
 external-controller: 127.0.0.1:9090
 external-ui-url: https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip
 external-ui: ui
@@ -28,7 +26,7 @@ dns:
   respect-rules: true
   use-system-hosts: false
   nameserver:
-    - 1.1.1.1#🇮🇷AUTO-IR-DIALER
+    - 1.1.1.1#__SELECTOR_GROUP__
   proxy-server-nameserver:
     - 8.8.8.8#DIRECT
   direct-nameserver:
@@ -45,8 +43,6 @@ dns:
     - "+.lan"
     - "+.local"
     - "geosite:private"
-
-# TUN Settings
 tun:
   enable: true
   stack: mixed
@@ -81,12 +77,8 @@ sniffer:
         - 2083
         - 2087
         - 2096
-proxies: []
-
-# Proxy Groups - Will be populated by the Python script
-proxy-groups: []
-
-# Rule Providers
+__PROXIES_BLOCK__
+__PROXY_GROUPS_BLOCK__
 rule-providers:
   phishing:
     type: http
@@ -153,8 +145,7 @@ rules:
   - RULE-SET,private-cidr,DIRECT,no-resolve
   - RULE-SET,ir,DIRECT
   - RULE-SET,ir-cidr,DIRECT,no-resolve
-  - MATCH,⚪PROXIES
-
+  - MATCH,__SELECTOR_GROUP__
 ntp:
   enable: true
   server: time.apple.com
