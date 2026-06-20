@@ -55,14 +55,14 @@ jobs:
         run: |
           git config --global user.name "GitHub Actions Bot"
           git config --global user.email "actions-bot@users.noreply.github.com"
-                    
-          if git status --porcelain | grep -q "sub/clash-meta-wg.yml" || git status --porcelain; then
+
+          if git status --porcelain sub/clash-meta-wg.yml | grep -q "sub/clash-meta-wg.yml"; then
             echo "Changes detected. Committing and pushing."
             git add sub/clash-meta-wg.yml
             git commit -m "Auto: Update clash-wireGuard configurations at: $(TZ='Asia/Tehran' date '+%H:%M:%S')" -m "Wireguard private key, reserved, addresses and all IPs have been renewed" --author="Diana-Cl <135276904+Diana-Cl@users.noreply.github.com>"
             git push
           else
-            echo "No changes detected in config files."
+            echo "No changes detected in sub/clash-meta-wg.yml."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
