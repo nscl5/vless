@@ -336,17 +336,23 @@ def main():
                 config_template_dict = yaml.safe_load(f)
             logger.info("Config template loaded successfully")
         except IOError as e:
-            logger.error(f"Error reading config template file '{CONFIG_TEMPLATE_PATH}': {e}")
+            logger.error(
+                f"Error reading config template file '{CONFIG_TEMPLATE_PATH}': {e}"
+            )
             sys.exit(1)
         except yaml.YAMLError as e:
-            logger.error(f"Invalid YML syntax in config file '{CONFIG_TEMPLATE_PATH}': {e}")
+            logger.error(
+                f"Invalid YML syntax in config file '{CONFIG_TEMPLATE_PATH}': {e}"
+            )
             sys.exit(1)
 
         logger.info("Binding keys for Entry proxies...")
         priv_key_entry, reserved_entry, ip_v4_entry, ip_v6_entry = bind_keys("entry")
 
         logger.info("Binding keys for Dialer proxies...")
-        priv_key_dialer, reserved_dialer, ip_v4_dialer, ip_v6_dialer = bind_keys("dialer")
+        priv_key_dialer, reserved_dialer, ip_v4_dialer, ip_v6_dialer = bind_keys(
+            "dialer"
+        )
 
         # Prepare unique interface IPs, adding CIDR notation (IPv4 only)
         ip_entry = "172.16.0.2/32"
@@ -359,55 +365,61 @@ def main():
         # BUILD PROXIES AND GROUPS DATA STRUCUTRES
         # ==========================================
         logger.info(f"Generating {NUM_PROXY_PAIRS} proxy pairs...")
-        
+
         # We generate text blocks directly to bypass PyYAML structural bugs
         proxies_text_block = "proxies:\n"
-        
+
         # 1. Inject the pure Yaml Anchors as the first items
-        proxies_text_block += f"  - &ir-dialer-common\n" \
-                              f"    type: wireguard\n" \
-                              f"    ip: {ip_dialer}\n" \
-                              f"    ip-version: ipv4\n" \
-                              f"    private-key: {priv_key_dialer}\n" \
-                              f"    public-key: {CLOUDFLARE_PUBLIC_KEY}\n" \
-                              f"    allowed-ips: ['0.0.0.0/0']\n" \
-                              f"    reserved: {reserved_dialer}\n" \
-                              f"    udp: true\n" \
-                              f"    mtu: 1280\n" \
-                              f"    amnezia-wg-option:\n" \
-                              f"       jc: 3\n" \
-                              f"       jmin: 10\n" \
-                              f"       jmax: 50\n" \
-                              f"       s1: 0\n" \
-                              f"       s2: 0\n" \
-                              f"       h1: 1\n" \
-                              f"       h2: 2\n" \
-                              f"       h4: 3\n" \
-                              f"       h3: 4\n" \
-                              f"       i1: <b 0xce000000010897a297ecc34cd6dd000044d0ec2e2e1ea2991f467ace4222129b5a098823784694b4897b9986ae0b7280135fa85e196d9ad980b150122129ce2a9379531b0fd3e871ca5fdb883c369832f730e272d7b8b74f393f9f0fa43f11e510ecb2219a52984410c204cf875585340c62238e14ad04dff382f2c200e0ee22fe743b9c6b8b043121c5710ec289f471c91ee414fca8b8be8419ae8ce7ffc53837f6ade262891895f3f4cecd31bc93ac5599e18e4f01b472362b8056c3172b513051f8322d1062997ef4a383b01706598d08d48c221d30e74c7ce000cdad36b706b1bf9b0607c32ec4b3203a4ee21ab64df336212b9758280803fcab14933b0e7ee1e04a7becce3e2633f4852585c567894a5f9efe9706a151b615856647e8b7dba69ab357b3982f554549bef9256111b2d67afde0b496f16962d4957ff654232aa9e845b61463908309cfd9de0a6abf5f425f577d7e5f6440652aa8da5f73588e82e9470f3b21b27b28c649506ae1a7f5f15b876f56abc4615f49911549b9bb39dd804fde182bd2dcec0c33bad9b138ca07d4a4a1650a2c2686acea05727e2a78962a840ae428f55627516e73c83dd8893b02358e81b524b4d99fda6df52b3a8d7a5291326e7ac9d773c5b43b8444554ef5aea104a738ed650aa979674bbed38da58ac29d87c29d387d80b526065baeb073ce65f075ccb56e47533aef357dceaa8293a523c5f6f790be90e4731123d3c6152a70576e90b4ab5bc5ead01576c68ab633ff7d36dcde2a0b2c68897e1acfc4d6483aaaeb635dd63c96b2b6a7a2bfe042f6aed82e5363aa850aace12ee3b1a93f30d8ab9537df483152a5527faca21efc9981b304f11fc95336f5b9637b174c5a0659e2b22e159a9fed4b8e93047371175b1d6d9cc8ab745f3b2281537d1c75fb9451871864efa5d184c38c185fd203de206751b92620f7c369e031d2041e152040920ac2c5ab5340bfc9d0561176abf10a147287ea90758575ac6a9f5ac9f390d0d5b23ee12af583383d994e22c0cf42383834bcd3ada1b3825a0664d8f3fb678261d57601ddf94a8a68a7c273a18c08aa99c7ad8c6c42eab67718843597ec9930457359dfdfbce024afc2dcf9348579a57d8d3490b2fa99f278f1c37d87dad9b221acd575192ffae1784f8e60ec7cee4068b6b988f0433d96d6a1b1865f4e155e9fe020279f434f3bf1bd117b717b92f6cd1cc9bea7d45978bcc3f24bda631a36910110a6ec06da35f8966c9279d130347594f13e9e07514fa370754d1424c0a1545c5070ef9fb2acd14233e8a50bfc5978b5bdf8bc1714731f798d21e2004117c61f2989dd44f0cf027b27d4019e81ed4b5c31db347c4a3a4d85048d7093cf16753d7b0d15e078f5c7a5205dc2f87e330a1f716738dce1c6180e9d02869b5546f1c4d2748f8c90d9693cba4e0079297d22fd61402dea32ff0eb69ebd65a5d0b687d87e3a8b2c42b648aa723c7c7daf37abcc4bb85caea2ee8f55bec20e913b3324ab8f5c3304f820d42ad1b9f2ffc1a3af9927136b4419e1e579ab4c2ae3c776d293d397d575df181e6cae0a4ada5d67ecea171cca3288d57c7bbdaee3befe745fb7d634f70386d873b90c4d6c6596bb65af68f9e5121e67ebf0d89d3c909ceedfb32ce9575a7758ff080724e1ab5d5f43074ecb53a479af21ed03d7b6899c36631c0166f9d47e5e1d4528a5d3d3f744029c4b1c190cbfbad06f5f83f7ad0429fa9a2719c56ffe3783460e166de2d8>\n"
+        proxies_text_block += (
+            f"  - &ir-dialer-common\n"
+            f"    type: wireguard\n"
+            f"    ip: {ip_dialer}\n"
+            f"    ip-version: ipv4\n"
+            f"    private-key: {priv_key_dialer}\n"
+            f"    public-key: {CLOUDFLARE_PUBLIC_KEY}\n"
+            f"    allowed-ips: ['0.0.0.0/0']\n"
+            f"    reserved: {reserved_dialer}\n"
+            f"    udp: true\n"
+            f"    mtu: 1280\n"
+            f"    amnezia-wg-option:\n"
+            f"       jc: 3\n"
+            f"       jmin: 10\n"
+            f"       jmax: 50\n"
+            f"       s1: 0\n"
+            f"       s2: 0\n"
+            f"       h1: 1\n"
+            f"       h2: 2\n"
+            f"       h4: 3\n"
+            f"       h3: 4\n"
+            f"       i1: <b 0xce000000010897a297ecc34cd6dd000044d0ec2e2e1ea2991f467ace4222129b5a098823784694b4897b9986ae0b7280135fa85e196d9ad980b150122129ce2a9379531b0fd3e871ca5fdb883c369832f730e272d7b8b74f393f9f0fa43f11e510ecb2219a52984410c204cf875585340c62238e14ad04dff382f2c200e0ee22fe743b9c6b8b043121c5710ec289f471c91ee414fca8b8be8419ae8ce7ffc53837f6ade262891895f3f4cecd31bc93ac5599e18e4f01b472362b8056c3172b513051f8322d1062997ef4a383b01706598d08d48c221d30e74c7ce000cdad36b706b1bf9b0607c32ec4b3203a4ee21ab64df336212b9758280803fcab14933b0e7ee1e04a7becce3e2633f4852585c567894a5f9efe9706a151b615856647e8b7dba69ab357b3982f554549bef9256111b2d67afde0b496f16962d4957ff654232aa9e845b61463908309cfd9de0a6abf5f425f577d7e5f6440652aa8da5f73588e82e9470f3b21b27b28c649506ae1a7f5f15b876f56abc4615f49911549b9bb39dd804fde182bd2dcec0c33bad9b138ca07d4a4a1650a2c2686acea05727e2a78962a840ae428f55627516e73c83dd8893b02358e81b524b4d99fda6df52b3a8d7a5291326e7ac9d773c5b43b8444554ef5aea104a738ed650aa979674bbed38da58ac29d87c29d387d80b526065baeb073ce65f075ccb56e47533aef357dceaa8293a523c5f6f790be90e4731123d3c6152a70576e90b4ab5bc5ead01576c68ab633ff7d36dcde2a0b2c68897e1acfc4d6483aaaeb635dd63c96b2b6a7a2bfe042f6aed82e5363aa850aace12ee3b1a93f30d8ab9537df483152a5527faca21efc9981b304f11fc95336f5b9637b174c5a0659e2b22e159a9fed4b8e93047371175b1d6d9cc8ab745f3b2281537d1c75fb9451871864efa5d184c38c185fd203de206751b92620f7c369e031d2041e152040920ac2c5ab5340bfc9d0561176abf10a147287ea90758575ac6a9f5ac9f390d0d5b23ee12af583383d994e22c0cf42383834bcd3ada1b3825a0664d8f3fb678261d57601ddf94a8a68a7c273a18c08aa99c7ad8c6c42eab67718843597ec9930457359dfdfbce024afc2dcf9348579a57d8d3490b2fa99f278f1c37d87dad9b221acd575192ffae1784f8e60ec7cee4068b6b988f0433d96d6a1b1865f4e155e9fe020279f434f3bf1bd117b717b92f6cd1cc9bea7d45978bcc3f24bda631a36910110a6ec06da35f8966c9279d130347594f13e9e07514fa370754d1424c0a1545c5070ef9fb2acd14233e8a50bfc5978b5bdf8bc1714731f798d21e2004117c61f2989dd44f0cf027b27d4019e81ed4b5c31db347c4a3a4d85048d7093cf16753d7b0d15e078f5c7a5205dc2f87e330a1f716738dce1c6180e9d02869b5546f1c4d2748f8c90d9693cba4e0079297d22fd61402dea32ff0eb69ebd65a5d0b687d87e3a8b2c42b648aa723c7c7daf37abcc4bb85caea2ee8f55bec20e913b3324ab8f5c3304f820d42ad1b9f2ffc1a3af9927136b4419e1e579ab4c2ae3c776d293d397d575df181e6cae0a4ada5d67ecea171cca3288d57c7bbdaee3befe745fb7d634f70386d873b90c4d6c6596bb65af68f9e5121e67ebf0d89d3c909ceedfb32ce9575a7758ff080724e1ab5d5f43074ecb53a479af21ed03d7b6899c36631c0166f9d47e5e1d4528a5d3d3f744029c4b1c190cbfbad06f5f83f7ad0429fa9a2719c56ffe3783460e166de2d8>\n"
+        )
 
-        proxies_text_block += f"  - &eu-entry-common\n" \
-                              f"    type: wireguard\n" \
-                              f"    ip: {ip_entry}\n" \
-                              f"    ip-version: ipv4\n" \
-                              f"    private-key: {priv_key_entry}\n" \
-                              f"    public-key: {CLOUDFLARE_PUBLIC_KEY}\n" \
-                              f"    allowed-ips: ['0.0.0.0/0']\n" \
-                              f"    reserved: {reserved_entry}\n" \
-                              f"    udp: true\n" \
-                              f"    mtu: 1280\n" \
-                              f"\n"
+        proxies_text_block += (
+            f"  - &eu-entry-common\n"
+            f"    type: wireguard\n"
+            f"    ip: {ip_entry}\n"
+            f"    ip-version: ipv4\n"
+            f"    private-key: {priv_key_entry}\n"
+            f"    public-key: {CLOUDFLARE_PUBLIC_KEY}\n"
+            f"    allowed-ips: ['0.0.0.0/0']\n"
+            f"    reserved: {reserved_entry}\n"
+            f"    udp: true\n"
+            f"    mtu: 1280\n"
+            f"\n"
+        )
 
-        proxies_text_block += f"  - &masque-common\n" \
-                              f"    type: masque\n" \
-                              f"    private-key: MHcCAQEEIOkcsGqzwUFIGp+Je205ipuWNfma1yqMRvahFSXj9mG5oAoGCCqGSM49AwEHoUQDQgAEdNtk2zEZ9eDjbUfgjuM9oV9inJ9CiY8J9Nx6ZvxSm8mXcm52wy+ql1+PTrwkFKH948jv53PWsSqh1GekL8HKew==\n" \
-                              f"    public-key: MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w==\n" \
-                              f"    ip: 172.16.0.2\n" \
-                              f"    ipv6: 2606:4700:110:8142:4b68:f1cd:25f:56b6\n" \
-                              f"    mtu: 1280\n" \
-                              f"    udp: true\n" \
-                              f"    remote-dns-resolve: true\n" \
-                              f"    dns: [1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001]\n\n"
+        proxies_text_block += (
+            "  - &masque-common\n"
+            "    type: masque\n"
+            "    private-key: MHcCAQEEIOkcsGqzwUFIGp+Je205ipuWNfma1yqMRvahFSXj9mG5oAoGCCqGSM49AwEHoUQDQgAEdNtk2zEZ9eDjbUfgjuM9oV9inJ9CiY8J9Nx6ZvxSm8mXcm52wy+ql1+PTrwkFKH948jv53PWsSqh1GekL8HKew==\n"
+            "    public-key: MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w==\n"
+            "    ip: 172.16.0.2\n"
+            "    ipv6: 2606:4700:110:8142:4b68:f1cd:25f:56b6\n"
+            "    mtu: 1280\n"
+            "    udp: true\n"
+            "    remote-dns-resolve: true\n"
+            "    dns: [1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001]\n\n"
+        )
 
         # 2. Generate Loop Proxies pointing to Anchors
         for i in range(NUM_PROXY_PAIRS):
@@ -417,37 +429,45 @@ def main():
 
             dialer_proxy_name = f"{DIALER_PROXY_BASE_NAME}-{pair_num:02d}"
             entry_proxy_name = f"{ENTRY_PROXY_BASE_NAME}-{pair_num:02d}"
-            
+
             dialer_proxy_names.append(dialer_proxy_name)
             entry_proxy_names.append(entry_proxy_name)
 
             # Dialer text injection
-            proxies_text_block += f"  - <<: *ir-dialer-common\n" \
-                                  f"    name: {dialer_proxy_name}\n" \
-                                  f"    server: {server_dialer}\n" \
-                                  f"    port: {port_dialer}\n\n"
+            proxies_text_block += (
+                f"  - <<: *ir-dialer-common\n"
+                f"    name: {dialer_proxy_name}\n"
+                f"    server: {server_dialer}\n"
+                f"    port: {port_dialer}\n\n"
+            )
 
             # Entry text injection
-            proxies_text_block += f"  - <<: *eu-entry-common\n" \
-                                  f"    name: {entry_proxy_name}\n" \
-                                  f"    server: {server_entry}\n" \
-                                  f"    port: {port_entry}\n" \
-                                  f"    dialer-proxy: {dialer_proxy_name}\n\n"
+            proxies_text_block += (
+                f"  - <<: *eu-entry-common\n"
+                f"    name: {entry_proxy_name}\n"
+                f"    server: {server_entry}\n"
+                f"    port: {port_entry}\n"
+                f"    dialer-proxy: {dialer_proxy_name}\n\n"
+            )
 
         # 3. Add Static MASQUE Proxies
         masque_names = ["MASQUE-01", "MASQUE-02"]
-        proxies_text_block += f"  - <<: *masque-common\n" \
-                              f"    name: MASQUE-01\n" \
-                              f"    server: 162.159.198.2\n" \
-                              f"    port: 443\n" \
-                              f"    sni: 4pda.to\n\n"
+        proxies_text_block += (
+            "  - <<: *masque-common\n"
+            "    name: MASQUE-01\n"
+            "    server: 162.159.198.2\n"
+            "    port: 443\n"
+            "    sni: 4pda.to\n\n"
+        )
 
-        proxies_text_block += f"  - <<: *masque-common\n" \
-                              f"    name: MASQUE-02\n" \
-                              f"    server: 162.159.198.2\n" \
-                              f"    port: 443\n" \
-                              f"    sni: 4pda.to\n" \
-                              f"    network: h2\n\n"
+        proxies_text_block += (
+            "  - <<: *masque-common\n"
+            "    name: MASQUE-02\n"
+            "    server: 162.159.198.2\n"
+            "    port: 443\n"
+            "    sni: 4pda.to\n"
+            "    network: h2\n\n"
+        )
 
         # --- Create Proxy Groups Dynamically ---
         logger.info("Creating proxy groups...")
@@ -541,7 +561,7 @@ def main():
                 f.write(proxies_text_block)
                 f.write("\n")
                 f.write(base_yaml_output)
-                
+
             logger.info(f"Successfully generated '{OUTPUT_YAML_FILENAME}'")
         except IOError as e:
             logger.error(f"Error writing to file '{OUTPUT_YAML_FILENAME}': {e}")
