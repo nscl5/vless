@@ -80,7 +80,9 @@ def load_cached_keys():
                 content = f.read()
                 return json.loads(content) if content else []
         except json.JSONDecodeError:
-            logger.warning(f"Cache file {CACHE_FILE_PATH} is corrupted. Starting fresh.")
+            logger.warning(
+                f"Cache file {CACHE_FILE_PATH} is corrupted. Starting fresh."
+            )
             return []
         except IOError as e:
             logger.error(f"Error reading cache file {CACHE_FILE_PATH}: {e}")
@@ -129,13 +131,17 @@ def register_key_on_CF(pub_key):
     try:
         url = "https://api.cloudflareclient.com/v0a4005/reg"
         install_id = base64.b64encode(os.urandom(12)).decode("utf-8")
-        fcm_token = f"{install_id}:APA91b{base64.b64encode(os.urandom(138)).decode('utf-8')}"
+        fcm_token = (
+            f"{install_id}:APA91b{base64.b64encode(os.urandom(138)).decode('utf-8')}"
+        )
         body = {
             "key": pub_key,
             "install_id": install_id,
             "fcm_token": fcm_token,
             "warp_enabled": True,
-            "tos": datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z"),
+            "tos": datetime.datetime.now(datetime.timezone.utc)
+            .isoformat()
+            .replace("+00:00", "Z"),
             "type": "Android",
             "model": "PC",
             "locale": "en_US",
@@ -148,7 +154,9 @@ def register_key_on_CF(pub_key):
             "User-Agent": "okhttp/3.12.1",
         }
         time.sleep(random.uniform(1.5, 2.5))
-        with requests.post(url, data=json.dumps(body), headers=headers, timeout=25) as r:
+        with requests.post(
+            url, data=json.dumps(body), headers=headers, timeout=25
+        ) as r:
             if r.status_code == 429:
                 retry_after = r.headers.get("Retry-After")
                 wait_time = int(retry_after) if retry_after else 15
@@ -196,21 +204,27 @@ def bind_keys(key_type):
                 logger.error("Could not find 'client_id' in API response.")
                 sys.exit(1)
 
-            cached_keys.append({
-                "type": key_type,
-                "private_key": priv_string,
-                "reserved": client_id,
-                "interface_v4": v4,
-                "interface_v6": v6,
-                "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            })
+            cached_keys.append(
+                {
+                    "type": key_type,
+                    "private_key": priv_string,
+                    "reserved": client_id,
+                    "interface_v4": v4,
+                    "interface_v6": v6,
+                    "timestamp": datetime.datetime.now(
+                        datetime.timezone.utc
+                    ).isoformat(),
+                }
+            )
             save_cached_keys(cached_keys)
             return priv_string, client_id, v4, v6
         else:
             logger.error(f"API failed: {result.status_code if result else 'N/A'}")
             sys.exit(1)
     except Exception as e:
-        logger.error(f"Cloudflare API registration failed for {key_type}: {e}", exc_info=True)
+        logger.error(
+            f"Cloudflare API registration failed for {key_type}: {e}", exc_info=True
+        )
         sys.exit(1)
 
 
@@ -231,7 +245,9 @@ def generate_ipv4_endpoint():
     return f"{prefix}{last_octet}", random.choice(available_ports)
 
 
-def build_proxies_block(pairs, priv_dialer, reserved_dialer, priv_entry, reserved_entry):
+def build_proxies_block(
+    pairs, priv_dialer, reserved_dialer, priv_entry, reserved_entry
+):
     lines = []
 
     lines.append("warp-dialer-common: &warp-dialer-common")
@@ -303,19 +319,19 @@ def build_proxies_block(pairs, priv_dialer, reserved_dialer, priv_entry, reserve
         lines.append(f"  dialer-proxy: {DIALER_PROXY_BASE_NAME}-{tag}")
         lines.append("")
 
-    lines.append(f"- name: MASQUE")
-    lines.append(f"  <<: *masque-common")
+    lines.append("- name: MASQUE")
+    lines.append("  <<: *masque-common")
     lines.append(f"  server: {MASQUE_SERVER}")
     lines.append(f"  port: {MASQUE_PORT}")
     lines.append(f"  sni: {MASQUE_SNI}")
     lines.append("")
 
-    lines.append(f"- name: MASQUE-H2")
-    lines.append(f"  <<: *masque-common")
+    lines.append("- name: MASQUE-H2")
+    lines.append("  <<: *masque-common")
     lines.append(f"  server: {MASQUE_SERVER}")
     lines.append(f"  port: {MASQUE_PORT}")
     lines.append(f"  sni: {MASQUE_SNI}")
-    lines.append(f"  network: h2")
+    lines.append("  network: h2")
     lines.append("")
 
     return "\n".join(lines)
@@ -323,7 +339,13 @@ def build_proxies_block(pairs, priv_dialer, reserved_dialer, priv_entry, reserve
 
 def build_proxy_groups_block(dialer_names, entry_names):
     all_proxies = (
-        [DIALER_URL_TEST_GROUP_NAME, ENTRY_URL_TEST_GROUP_NAME, "MASQUE", "MASQUE-H2", "DIRECT"]
+        [
+            DIALER_URL_TEST_GROUP_NAME,
+            ENTRY_URL_TEST_GROUP_NAME,
+            "MASQUE",
+            "MASQUE-H2",
+            "DIRECT",
+        ]
         + dialer_names
         + entry_names
     )
@@ -388,19 +410,20 @@ def main():
     entry_names = []
 
     for i in range(NUM_PROXY_PAIRS):
-        tag = f"{i+1:02d}"
+        tag = f"{i + 1:02d}"
         s_d, p_d = generate_ipv4_endpoint()
         s_e, p_e = generate_ipv4_endpoint()
         pairs.append((s_d, p_d, s_e, p_e))
         dialer_names.append(f"{DIALER_PROXY_BASE_NAME}-{tag}")
         entry_names.append(f"{ENTRY_PROXY_BASE_NAME}-{tag}")
 
-    proxies_block = build_proxies_block(pairs, priv_dialer, reserved_dialer, priv_entry, reserved_entry)
+    proxies_block = build_proxies_block(
+        pairs, priv_dialer, reserved_dialer, priv_entry, reserved_entry
+    )
     groups_block = build_proxy_groups_block(dialer_names, entry_names)
 
     output = (
-        template_str
-        .replace("__PROXIES_BLOCK__", proxies_block)
+        template_str.replace("__PROXIES_BLOCK__", proxies_block)
         .replace("__PROXY_GROUPS_BLOCK__", groups_block)
         .replace("__SELECTOR_GROUP__", MAIN_SELECTOR_GROUP_NAME)
     )
@@ -409,7 +432,9 @@ def main():
         os.makedirs(os.path.dirname(OUTPUT_YAML_FILENAME), exist_ok=True)
         generation_time = datetime.datetime.now().isoformat()
         with open(OUTPUT_YAML_FILENAME, "w", encoding="utf-8") as f:
-            f.write(f"# Generated configs for clash-meta with WireGuard proxies that have amnesia values.\n")
+            f.write(
+                "# Generated configs for clash-meta with WireGuard proxies that have amnesia values.\n"
+            )
             f.write(f"# Time is: {generation_time}\n\n")
             f.write(output)
         logger.info(f"Successfully generated '{OUTPUT_YAML_FILENAME}'")
