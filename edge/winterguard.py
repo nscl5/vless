@@ -354,7 +354,9 @@ def build_proxy_groups_block(dialer_names, entry_names):
 
     lines.append(f"- name: {MAIN_SELECTOR_GROUP_NAME}")
     lines.append("  type: select")
-    lines.append("  icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg")
+    lines.append(
+        "  icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg"
+    )
     lines.append("  proxies:")
     for p in all_proxies:
         lines.append(f"    - {p}")
