@@ -26,15 +26,19 @@ dns:
   respect-rules: true
   use-system-hosts: false
   nameserver:
-    - 1.1.1.1#__SELECTOR_GROUP__
-  proxy-server-nameserver:
-    - 8.8.8.8#DIRECT
+    - 1.1.1.1
+  default-nameserver:
+    - 223.5.5.5
+    - 1.1.1.1
   direct-nameserver:
     - 8.8.8.8#DIRECT
+  proxy-server-nameserver:
+    - 8.8.8.8#DIRECT
+    - 1.1.1.1#DIRECT
   direct-nameserver-follow-policy: true
   nameserver-policy:
     raw.githubusercontent.com: 8.8.8.8#DIRECT
-    time.apple.com: 8.8.8.8#DIRECT
+    time.cloudflare.com: 8.8.8.8#DIRECT
     rule-set:ir: 8.8.8.8#DIRECT
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
@@ -59,24 +63,7 @@ sniffer:
   force-dns-mapping: true
   parse-pure-ip: true
   override-destination: true
-  sniff:
-    HTTP:
-      ports:
-        - 80
-        - 8080
-        - 8880
-        - 2052
-        - 2082
-        - 2086
-        - 2095
-    TLS:
-      ports:
-        - 443
-        - 8443
-        - 2053
-        - 2083
-        - 2087
-        - 2096
+
 __PROXIES_BLOCK__
 __PROXY_GROUPS_BLOCK__
 rule-providers:
@@ -148,6 +135,6 @@ rules:
   - MATCH,__SELECTOR_GROUP__
 ntp:
   enable: true
-  server: time.apple.com
+  server: time.cloudflare.com
   port: 123
   interval: 30
