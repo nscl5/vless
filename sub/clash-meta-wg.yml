@@ -83,105 +83,105 @@ masque-common: &masque-common
     - 1.0.0.1
 
 proxies:
-- name: IR-DIALER-01
-  <<: *warp-dialer-common
-  server: 8.6.112.4
-  port: 1074
+  - name: IR-DIALER-01
+    <<: *warp-dialer-common
+    server: 8.6.112.4
+    port: 1074
 
-- name: EU-ENTRY-01
-  <<: *warp-entry-common
-  server: 8.6.112.7
-  port: 908
-  dialer-proxy: IR-DIALER-01
+  - name: EU-ENTRY-01
+    <<: *warp-entry-common
+    server: 8.6.112.7
+    port: 908
+    dialer-proxy: IR-DIALER-01
 
-- name: IR-DIALER-02
-  <<: *warp-dialer-common
-  server: 188.114.97.237
-  port: 500
+  - name: IR-DIALER-02
+    <<: *warp-dialer-common
+    server: 188.114.97.237
+    port: 500
 
-- name: EU-ENTRY-02
-  <<: *warp-entry-common
-  server: 8.6.112.203
-  port: 945
-  dialer-proxy: IR-DIALER-02
+  - name: EU-ENTRY-02
+    <<: *warp-entry-common
+    server: 8.6.112.203
+    port: 945
+    dialer-proxy: IR-DIALER-02
 
-- name: IR-DIALER-03
-  <<: *warp-dialer-common
-  server: 8.6.112.226
-  port: 942
+  - name: IR-DIALER-03
+    <<: *warp-dialer-common
+    server: 8.6.112.226
+    port: 942
 
-- name: EU-ENTRY-03
-  <<: *warp-entry-common
-  server: 8.6.112.25
-  port: 894
-  dialer-proxy: IR-DIALER-03
+  - name: EU-ENTRY-03
+    <<: *warp-entry-common
+    server: 8.6.112.25
+    port: 894
+    dialer-proxy: IR-DIALER-03
 
-- name: IR-DIALER-04
-  <<: *warp-dialer-common
-  server: 8.6.112.198
-  port: 1387
+  - name: IR-DIALER-04
+    <<: *warp-dialer-common
+    server: 8.6.112.198
+    port: 1387
 
-- name: EU-ENTRY-04
-  <<: *warp-entry-common
-  server: 8.6.112.143
-  port: 3138
-  dialer-proxy: IR-DIALER-04
+  - name: EU-ENTRY-04
+    <<: *warp-entry-common
+    server: 8.6.112.143
+    port: 3138
+    dialer-proxy: IR-DIALER-04
 
-- name: MASQUE
-  <<: *masque-common
-  server: 162.159.198.2
-  port: 443
-  sni: 4pda.to
+  - name: MASQUE
+    <<: *masque-common
+    server: 162.159.198.2
+    port: 443
+    sni: 4pda.to
 
-- name: MASQUE-H2
-  <<: *masque-common
-  server: 162.159.198.2
-  port: 443
-  sni: 4pda.to
-  network: h2
+  - name: MASQUE-H2
+    <<: *masque-common
+    server: 162.159.198.2
+    port: 443
+    sni: 4pda.to
+    network: h2
 
 proxy-groups:
-- name: ⚪ PROXIES
-  type: select
-  icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg
-  proxies:
-    - 🇮🇷 AUTO-IR-DIALER
-    - 🇪🇺 AUTO-EU-ENTRY
-    - MASQUE
-    - MASQUE-H2
-    - DIRECT
-    - IR-DIALER-01
-    - IR-DIALER-02
-    - IR-DIALER-03
-    - IR-DIALER-04
-    - EU-ENTRY-01
-    - EU-ENTRY-02
-    - EU-ENTRY-03
-    - EU-ENTRY-04
+  - name: ⚪ PROXIES
+    type: select
+    icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg
+    proxies:
+      - 🇮🇷 AUTO-IR-DIALER
+      - 🇪🇺 AUTO-EU-ENTRY
+      - MASQUE
+      - MASQUE-H2
+      - DIRECT
+      - IR-DIALER-01
+      - IR-DIALER-02
+      - IR-DIALER-03
+      - IR-DIALER-04
+      - EU-ENTRY-01
+      - EU-ENTRY-02
+      - EU-ENTRY-03
+      - EU-ENTRY-04
 
-- name: 🇮🇷 AUTO-IR-DIALER
-  type: url-test
-  url: https://www.gstatic.com/generate_204
-  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/ir.svg
-  interval: 180
-  tolerance: 50
-  proxies:
-    - IR-DIALER-01
-    - IR-DIALER-02
-    - IR-DIALER-03
-    - IR-DIALER-04
+  - name: 🇮🇷 AUTO-IR-DIALER
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/ir.svg
+    interval: 180
+    tolerance: 50
+    proxies:
+      - IR-DIALER-01
+      - IR-DIALER-02
+      - IR-DIALER-03
+      - IR-DIALER-04
 
-- name: 🇪🇺 AUTO-EU-ENTRY
-  type: url-test
-  url: https://www.gstatic.com/generate_204
-  interval: 25
-  tolerance: 50
-  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg
-  proxies:
-    - EU-ENTRY-01
-    - EU-ENTRY-02
-    - EU-ENTRY-03
-    - EU-ENTRY-04
+  - name: 🇪🇺 AUTO-EU-ENTRY
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    interval: 25
+    tolerance: 50
+    icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg
+    proxies:
+      - EU-ENTRY-01
+      - EU-ENTRY-02
+      - EU-ENTRY-03
+      - EU-ENTRY-04
 
 rules:
   - DOMAIN-SUFFIX,ir,DIRECT
