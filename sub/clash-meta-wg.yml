@@ -128,136 +128,136 @@ masque-common: &masque-common
     - 1.0.0.1
 
 proxies:
-- name: IR-DIALER-01
-  <<: *warp-dialer-common
-  server: 8.6.112.111
-  port: 2506
+  - name: IR-DIALER-01
+    <<: *warp-dialer-common
+    server: 8.6.112.111
+    port: 2506
 
-- name: EU-ENTRY-01
-  <<: *warp-entry-common
-  server: 8.6.112.189
-  port: 1014
-  dialer-proxy: IR-DIALER-01
+  - name: EU-ENTRY-01
+    <<: *warp-entry-common
+    server: 8.6.112.189
+    port: 1014
+    dialer-proxy: IR-DIALER-01
 
-- name: IR-DIALER-02
-  <<: *warp-dialer-common
-  server: 8.6.112.102
-  port: 4177
+  - name: IR-DIALER-02
+    <<: *warp-dialer-common
+    server: 8.6.112.102
+    port: 4177
 
-- name: EU-ENTRY-02
-  <<: *warp-entry-common
-  server: 188.114.97.45
-  port: 939
-  dialer-proxy: IR-DIALER-02
+  - name: EU-ENTRY-02
+    <<: *warp-entry-common
+    server: 188.114.97.45
+    port: 939
+    dialer-proxy: IR-DIALER-02
 
-- name: IR-DIALER-03
-  <<: *warp-dialer-common
-  server: 8.6.112.21
-  port: 4233
+  - name: IR-DIALER-03
+    <<: *warp-dialer-common
+    server: 8.6.112.21
+    port: 4233
 
-- name: EU-ENTRY-03
-  <<: *warp-entry-common
-  server: 8.6.112.40
-  port: 7559
-  dialer-proxy: IR-DIALER-03
+  - name: EU-ENTRY-03
+    <<: *warp-entry-common
+    server: 8.6.112.40
+    port: 7559
+    dialer-proxy: IR-DIALER-03
 
-- name: IR-DIALER-04
-  <<: *warp-dialer-common
-  server: 188.114.97.232
-  port: 1180
+  - name: IR-DIALER-04
+    <<: *warp-dialer-common
+    server: 188.114.97.232
+    port: 1180
 
-- name: EU-ENTRY-04
-  <<: *warp-entry-common
-  server: 8.6.112.251
-  port: 854
-  dialer-proxy: IR-DIALER-04
+  - name: EU-ENTRY-04
+    <<: *warp-entry-common
+    server: 8.6.112.251
+    port: 854
+    dialer-proxy: IR-DIALER-04
 
-- name: IR-DIALER-05
-  <<: *warp-dialer-common
-  server: 8.6.112.55
-  port: 3476
+  - name: IR-DIALER-05
+    <<: *warp-dialer-common
+    server: 8.6.112.55
+    port: 3476
 
-- name: EU-ENTRY-05
-  <<: *warp-entry-common
-  server: 188.114.97.112
-  port: 968
-  dialer-proxy: IR-DIALER-05
+  - name: EU-ENTRY-05
+    <<: *warp-entry-common
+    server: 188.114.97.112
+    port: 968
+    dialer-proxy: IR-DIALER-05
 
-- name: IR-DIALER-06
-  <<: *warp-dialer-common
-  server: 188.114.97.86
-  port: 942
+  - name: IR-DIALER-06
+    <<: *warp-dialer-common
+    server: 188.114.97.86
+    port: 942
 
-- name: EU-ENTRY-06
-  <<: *warp-entry-common
-  server: 8.6.112.251
-  port: 988
-  dialer-proxy: IR-DIALER-06
+  - name: EU-ENTRY-06
+    <<: *warp-entry-common
+    server: 8.6.112.251
+    port: 988
+    dialer-proxy: IR-DIALER-06
 
-- name: MASQUE
-  <<: *masque-common
-  server: 162.159.198.2
-  port: 443
-  sni: 4pda.to
+  - name: MASQUE
+    <<: *masque-common
+    server: 162.159.198.2
+    port: 443
+    sni: 4pda.to
 
-- name: MASQUE-H2
-  <<: *masque-common
-  server: 162.159.198.2
-  port: 443
-  sni: 4pda.to
-  network: h2
+  - name: MASQUE-H2
+    <<: *masque-common
+    server: 162.159.198.2
+    port: 443
+    sni: 4pda.to
+    network: h2
 
 proxy-groups:
-- name: ⚪ PROXIES
-  type: select
-  proxies:
-    - 🇮🇷 AUTO-IR-DIALER
-    - 🇪🇺 AUTO-EU-ENTRY
-    - MASQUE
-    - MASQUE-H2
-    - DIRECT
-    - IR-DIALER-01
-    - IR-DIALER-02
-    - IR-DIALER-03
-    - IR-DIALER-04
-    - IR-DIALER-05
-    - IR-DIALER-06
-    - EU-ENTRY-01
-    - EU-ENTRY-02
-    - EU-ENTRY-03
-    - EU-ENTRY-04
-    - EU-ENTRY-05
-    - EU-ENTRY-06
+  - name: ⚪ PROXIES
+    type: select
+    proxies:
+      - 🇮🇷 AUTO-IR-DIALER
+      - 🇪🇺 AUTO-EU-ENTRY
+      - MASQUE
+      - MASQUE-H2
+      - DIRECT
+      - IR-DIALER-01
+      - IR-DIALER-02
+      - IR-DIALER-03
+      - IR-DIALER-04
+      - IR-DIALER-05
+      - IR-DIALER-06
+      - EU-ENTRY-01
+      - EU-ENTRY-02
+      - EU-ENTRY-03
+      - EU-ENTRY-04
+      - EU-ENTRY-05
+      - EU-ENTRY-06
 
-- name: 🇮🇷 AUTO-IR-DIALER
-  type: url-test
-  url: https://www.gstatic.com/generate_204
-  interval: 25
-  tolerance: 50
-  timeout: 5000
-  max-failed-times: 3
-  proxies:
-    - IR-DIALER-01
-    - IR-DIALER-02
-    - IR-DIALER-03
-    - IR-DIALER-04
-    - IR-DIALER-05
-    - IR-DIALER-06
+  - name: 🇮🇷 AUTO-IR-DIALER
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    interval: 25
+    tolerance: 50
+    timeout: 5000
+    max-failed-times: 3
+    proxies:
+      - IR-DIALER-01
+      - IR-DIALER-02
+      - IR-DIALER-03
+      - IR-DIALER-04
+      - IR-DIALER-05
+      - IR-DIALER-06
 
-- name: 🇪🇺 AUTO-EU-ENTRY
-  type: url-test
-  url: https://www.gstatic.com/generate_204
-  interval: 25
-  tolerance: 50
-  timeout: 5000
-  max-failed-times: 3
-  proxies:
-    - EU-ENTRY-01
-    - EU-ENTRY-02
-    - EU-ENTRY-03
-    - EU-ENTRY-04
-    - EU-ENTRY-05
-    - EU-ENTRY-06
+  - name: 🇪🇺 AUTO-EU-ENTRY
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    interval: 25
+    tolerance: 50
+    timeout: 5000
+    max-failed-times: 3
+    proxies:
+      - EU-ENTRY-01
+      - EU-ENTRY-02
+      - EU-ENTRY-03
+      - EU-ENTRY-04
+      - EU-ENTRY-05
+      - EU-ENTRY-06
 
 rule-providers:
   phishing:
