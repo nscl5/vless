@@ -262,9 +262,9 @@ def build_proxies_block(
     lines.append("  udp: true")
     lines.append("  mtu: 1280")
     lines.append("  amnezia-wg-option:")
-    lines.append("    jc: 4")
-    lines.append("    jmin: 40")
-    lines.append("    jmax: 70")
+    lines.append("    jc: 3")
+    lines.append("    jmin: 10")
+    lines.append("    jmax: 50")
     lines.append("    s1: 0")
     lines.append("    s2: 0")
     lines.append("    h1: 1")
@@ -354,6 +354,7 @@ def build_proxy_groups_block(dialer_names, entry_names):
 
     lines.append(f"- name: {MAIN_SELECTOR_GROUP_NAME}")
     lines.append("  type: select")
+    lines.append("  icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg")
     lines.append("  proxies:")
     for p in all_proxies:
         lines.append(f"    - {p}")
@@ -362,10 +363,9 @@ def build_proxy_groups_block(dialer_names, entry_names):
     lines.append(f"- name: {DIALER_URL_TEST_GROUP_NAME}")
     lines.append("  type: url-test")
     lines.append("  url: https://www.gstatic.com/generate_204")
-    lines.append("  interval: 25")
+    lines.append("  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/ir.svg")
+    lines.append("  interval: 180")
     lines.append("  tolerance: 50")
-    lines.append("  timeout: 5000")
-    lines.append("  max-failed-times: 3")
     lines.append("  proxies:")
     for p in dialer_names:
         lines.append(f"    - {p}")
@@ -376,8 +376,7 @@ def build_proxy_groups_block(dialer_names, entry_names):
     lines.append("  url: https://www.gstatic.com/generate_204")
     lines.append("  interval: 25")
     lines.append("  tolerance: 50")
-    lines.append("  timeout: 5000")
-    lines.append("  max-failed-times: 3")
+    lines.append("  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg")
     lines.append("  proxies:")
     for p in entry_names:
         lines.append(f"    - {p}")
