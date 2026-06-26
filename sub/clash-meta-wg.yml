@@ -1,48 +1,36 @@
 # Generated configs for clash-meta with WireGuard proxies that have amnesia values.
-# Time is: 2026-06-25T10:34:26.062945
+# Time is: 2026-06-26T04:03:46.574808
 
 mixed-port: 7890
-ipv6: true
+ipv6: false
 allow-lan: true
 mode: rule
 log-level: warning
-disable-keep-alive: false
 keep-alive-idle: 10
 keep-alive-interval: 15
 unified-delay: true
-geo-auto-update: true
-geo-update-interval: 168
+disable-keep-alive: false
+external-ui: ui
 external-controller: 127.0.0.1:9090
 external-ui-url: https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip
-external-ui: ui
 external-controller-cors:
   allow-origins:
     - "*"
   allow-private-network: true
-profile:
-  store-selected: true
-  store-fake-ip: true
+
 dns:
   enable: true
-  listen: 127.0.0.1:1053
   ipv6: false
+  listen: 127.0.0.1:1053
   respect-rules: true
   use-system-hosts: false
-  nameserver:
-    - 1.1.1.1
   default-nameserver:
-    - 223.5.5.5
     - 1.1.1.1
-  direct-nameserver:
-    - 8.8.8.8#DIRECT
-  proxy-server-nameserver:
-    - 8.8.8.8#DIRECT
-    - 1.1.1.1#DIRECT
-  direct-nameserver-follow-policy: true
-  nameserver-policy:
-    raw.githubusercontent.com: 8.8.8.8#DIRECT
-    time.cloudflare.com: 8.8.8.8#DIRECT
-    rule-set:ir: 8.8.8.8#DIRECT
+    - 8.8.8.8
+    - 223.5.5.5
+  nameserver:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
@@ -71,11 +59,11 @@ warp-dialer-common: &warp-dialer-common
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: QNXM8tpjMKAT7iwzT9wEMalR/9Yg6nm7vyPQ5N90y2k=
+  private-key: SK8lF5UPwIqBH8zQCAyVDK2v389oXldx7w98drta/lI=
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
     - 0.0.0.0/0
-  reserved: tVQ5
+  reserved: xab/
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -93,11 +81,11 @@ warp-entry-common: &warp-entry-common
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: 0Mba49Unp8nZFJ/9cRLaFLmTfd+ONBh8FPJ/Cdg2RV8=
+  private-key: 6Ibhjz2gpQplMmuIbXCRB4AYe0xwFP4ZFIHvIjOQUHA=
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
     - 0.0.0.0/0
-  reserved: Z+cr
+  reserved: qHFY
   udp: true
   mtu: 1280
 
@@ -115,135 +103,135 @@ masque-common: &masque-common
     - 1.0.0.1
 
 proxies:
-  - name: IR-DIALER-01
-    <<: *warp-dialer-common
-    server: 8.6.112.168
-    port: 890
+- name: IR-DIALER-01
+  <<: *warp-dialer-common
+  server: 8.6.112.90
+  port: 3854
 
-  - name: EU-ENTRY-01
-    <<: *warp-entry-common
-    server: 188.114.97.72
-    port: 939
-    dialer-proxy: IR-DIALER-01
+- name: EU-ENTRY-01
+  <<: *warp-entry-common
+  server: 8.6.112.117
+  port: 934
+  dialer-proxy: IR-DIALER-01
 
-  - name: IR-DIALER-02
-    <<: *warp-dialer-common
-    server: 188.114.97.245
-    port: 987
+- name: IR-DIALER-02
+  <<: *warp-dialer-common
+  server: 8.6.112.250
+  port: 3854
 
-  - name: EU-ENTRY-02
-    <<: *warp-entry-common
-    server: 188.114.97.243
-    port: 928
-    dialer-proxy: IR-DIALER-02
+- name: EU-ENTRY-02
+  <<: *warp-entry-common
+  server: 188.114.97.76
+  port: 943
+  dialer-proxy: IR-DIALER-02
 
-  - name: IR-DIALER-03
-    <<: *warp-dialer-common
-    server: 8.6.112.20
-    port: 1014
+- name: IR-DIALER-03
+  <<: *warp-dialer-common
+  server: 8.6.112.203
+  port: 8854
 
-  - name: EU-ENTRY-03
-    <<: *warp-entry-common
-    server: 188.114.97.8
-    port: 3854
-    dialer-proxy: IR-DIALER-03
+- name: EU-ENTRY-03
+  <<: *warp-entry-common
+  server: 8.6.112.8
+  port: 928
+  dialer-proxy: IR-DIALER-03
 
-  - name: IR-DIALER-04
-    <<: *warp-dialer-common
-    server: 8.6.112.102
-    port: 1018
+- name: IR-DIALER-04
+  <<: *warp-dialer-common
+  server: 8.6.112.71
+  port: 4177
 
-  - name: EU-ENTRY-04
-    <<: *warp-entry-common
-    server: 8.6.112.146
-    port: 3138
-    dialer-proxy: IR-DIALER-04
+- name: EU-ENTRY-04
+  <<: *warp-entry-common
+  server: 188.114.97.184
+  port: 890
+  dialer-proxy: IR-DIALER-04
 
-  - name: IR-DIALER-05
-    <<: *warp-dialer-common
-    server: 188.114.97.11
-    port: 934
+- name: IR-DIALER-05
+  <<: *warp-dialer-common
+  server: 8.6.112.131
+  port: 1018
 
-  - name: EU-ENTRY-05
-    <<: *warp-entry-common
-    server: 188.114.97.62
-    port: 878
-    dialer-proxy: IR-DIALER-05
+- name: EU-ENTRY-05
+  <<: *warp-entry-common
+  server: 188.114.97.246
+  port: 891
+  dialer-proxy: IR-DIALER-05
 
-  - name: IR-DIALER-06
-    <<: *warp-dialer-common
-    server: 8.6.112.254
-    port: 1387
+- name: IR-DIALER-06
+  <<: *warp-dialer-common
+  server: 188.114.97.231
+  port: 854
 
-  - name: EU-ENTRY-06
-    <<: *warp-entry-common
-    server: 188.114.97.234
-    port: 1701
-    dialer-proxy: IR-DIALER-06
+- name: EU-ENTRY-06
+  <<: *warp-entry-common
+  server: 8.6.112.14
+  port: 8742
+  dialer-proxy: IR-DIALER-06
 
-  - name: MASQUE
-    <<: *masque-common
-    server: 162.159.198.2
-    port: 443
-    sni: 4pda.to
+- name: MASQUE
+  <<: *masque-common
+  server: 162.159.198.2
+  port: 443
+  sni: 4pda.to
 
-  - name: MASQUE-H2
-    <<: *masque-common
-    server: 162.159.198.2
-    port: 443
-    sni: 4pda.to
-    network: h2
+- name: MASQUE-H2
+  <<: *masque-common
+  server: 162.159.198.2
+  port: 443
+  sni: 4pda.to
+  network: h2
 
 proxy-groups:
-  - name: ⚪ PROXIES
-    type: select
-    icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg
-    proxies:
-      - 🇮🇷 AUTO-IR-DIALER
-      - 🇪🇺 AUTO-EU-ENTRY
-      - MASQUE
-      - MASQUE-H2
-      - DIRECT
-      - IR-DIALER-01
-      - IR-DIALER-02
-      - IR-DIALER-03
-      - IR-DIALER-04
-      - IR-DIALER-05
-      - IR-DIALER-06
-      - EU-ENTRY-01
-      - EU-ENTRY-02
-      - EU-ENTRY-03
-      - EU-ENTRY-04
-      - EU-ENTRY-05
-      - EU-ENTRY-06
+- name: ⚪ PROXIES
+  type: select
+  icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg
+  proxies:
+    - 🇮🇷 AUTO-IR-DIALER
+    - 🇪🇺 AUTO-EU-ENTRY
+    - MASQUE
+    - MASQUE-H2
+    - DIRECT
+    - IR-DIALER-01
+    - IR-DIALER-02
+    - IR-DIALER-03
+    - IR-DIALER-04
+    - IR-DIALER-05
+    - IR-DIALER-06
+    - EU-ENTRY-01
+    - EU-ENTRY-02
+    - EU-ENTRY-03
+    - EU-ENTRY-04
+    - EU-ENTRY-05
+    - EU-ENTRY-06
 
-  - name: 🇮🇷 AUTO-IR-DIALER
-    type: url-test
-    url: https://www.gstatic.com/generate_204
-    icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/ir.svg
-    interval: 180
-    tolerance: 50
-    proxies:
-      - IR-DIALER-01
-      - IR-DIALER-02
-      - IR-DIALER-03
-      - IR-DIALER-04
-      - IR-DIALER-05
-      - IR-DIALER-06
+- name: 🇮🇷 AUTO-IR-DIALER
+  type: url-test
+  url: https://www.gstatic.com/generate_204
+  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/ir.svg
+  interval: 180
+  tolerance: 50
+  proxies:
+    - IR-DIALER-01
+    - IR-DIALER-02
+    - IR-DIALER-03
+    - IR-DIALER-04
+    - IR-DIALER-05
+    - IR-DIALER-06
 
-  - name: 🇪🇺 AUTO-EU-ENTRY
-    type: url-test
-    url: https://www.gstatic.com/generate_204
-    interval: 25
-    tolerance: 50
-    icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg
-    proxies:
-      - EU-ENTRY-01
-      - EU-ENTRY-02
-      - EU-ENTRY-03
-      - EU-ENTRY-04
-      - EU-ENTRY-05
-      - EU-ENTRY-06
+- name: 🇪🇺 AUTO-EU-ENTRY
+  type: url-test
+  url: https://www.gstatic.com/generate_204
+  interval: 25
+  tolerance: 50
+  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg
+  proxies:
+    - EU-ENTRY-01
+    - EU-ENTRY-02
+    - EU-ENTRY-03
+    - EU-ENTRY-04
+    - EU-ENTRY-05
+    - EU-ENTRY-06
 
 rule-providers:
   phishing:
