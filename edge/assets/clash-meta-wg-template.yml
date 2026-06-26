@@ -1,45 +1,33 @@
 mixed-port: 7890
-ipv6: true
+ipv6: false
 allow-lan: true
 mode: rule
 log-level: warning
-disable-keep-alive: false
 keep-alive-idle: 10
 keep-alive-interval: 15
 unified-delay: true
-geo-auto-update: true
-geo-update-interval: 168
+disable-keep-alive: false
+external-ui: ui
 external-controller: 127.0.0.1:9090
 external-ui-url: https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip
-external-ui: ui
 external-controller-cors:
   allow-origins:
     - "*"
   allow-private-network: true
-profile:
-  store-selected: true
-  store-fake-ip: true
+
 dns:
   enable: true
-  listen: 127.0.0.1:1053
   ipv6: false
+  listen: 127.0.0.1:1053
   respect-rules: true
   use-system-hosts: false
-  nameserver:
-    - 1.1.1.1
   default-nameserver:
-    - 223.5.5.5
     - 1.1.1.1
-  direct-nameserver:
-    - 8.8.8.8#DIRECT
-  proxy-server-nameserver:
-    - 8.8.8.8#DIRECT
-    - 1.1.1.1#DIRECT
-  direct-nameserver-follow-policy: true
-  nameserver-policy:
-    raw.githubusercontent.com: 8.8.8.8#DIRECT
-    time.cloudflare.com: 8.8.8.8#DIRECT
-    rule-set:ir: 8.8.8.8#DIRECT
+    - 8.8.8.8
+    - 223.5.5.5
+  nameserver:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
