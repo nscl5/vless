@@ -22,9 +22,9 @@ OUTPUT_YAML_FILENAME = os.path.join(PARENT_DIR, "sub", "clash-meta-wg.yml")
 
 DIALER_PROXY_BASE_NAME = os.environ.get("DIALER_PROXY_BASE_NAME", "IR-DIALER")
 ENTRY_PROXY_BASE_NAME = os.environ.get("ENTRY_PROXY_BASE_NAME", "EU-ENTRY")
-MAIN_SELECTOR_GROUP_NAME = os.environ.get("MAIN_SELECTOR_GROUP_NAME", "⚪ PROXIES")
-DIALER_URL_TEST_GROUP_NAME = f"🇮🇷 AUTO-{DIALER_PROXY_BASE_NAME}"
-ENTRY_URL_TEST_GROUP_NAME = f"🇪🇺 AUTO-{ENTRY_PROXY_BASE_NAME}"
+MAIN_SELECTOR_GROUP_NAME = os.environ.get("MAIN_SELECTOR_GROUP_NAME", "⚪PROXIES")
+DIALER_URL_TEST_GROUP_NAME = f"🇮🇷AUTO-{DIALER_PROXY_BASE_NAME}"
+ENTRY_URL_TEST_GROUP_NAME = f"🇪🇺AUTO-{ENTRY_PROXY_BASE_NAME}"
 
 MASQUE_PRIVATE_KEY = "MHcCAQEEIOkcsGqzwUFIGp+Je205ipuWNfma1yqMRvahFSXj9mG5oAoGCCqGSM49AwEHoUQDQgAEdNtk2zEZ9eDjbUfgjuM9oV9inJ9CiY8J9Nx6ZvxSm8mXcm52wy+ql1+PTrwkFKH948jv53PWsSqh1GekL8HKew=="
 MASQUE_PUBLIC_KEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIaU7MToJm9NKp8YfGxR6r+/h4mcG7SxI8tsW8OR1A5tv/zCzVbCRRh2t87/kxnP6lAy0lkr7qYwu+ox+k3dr6w=="
@@ -271,9 +271,8 @@ def build_proxies_block(
     lines.append("    h2: 2")
     lines.append("    h4: 3")
     lines.append("    h3: 4")
-    lines.append(
-        "    i1: <b 0xc800000001018800002b45615e996de27ff5ec5f583061ab38eac69fd8fec356802847cd1c7c15a87402bb0a433d4054defedc066e>"
-    )
+    lines.append("    i1: <b 0xc800000001018800002b45615e996de27ff5ec5f583061ab38eac69fd8fec356802847cd1c7c15a87402bb0a433d4054defedc066e>")
+    lines.append("")
 
     lines.append("warp-entry-common: &warp-entry-common")
     lines.append("  type: wireguard")
@@ -308,32 +307,32 @@ def build_proxies_block(
         tag = f"{num:02d}"
         entry_name = f"{ENTRY_PROXY_BASE_NAME}-{tag}"
 
-        lines.append(f"- name: {DIALER_PROXY_BASE_NAME}-{tag}")
-        lines.append("  <<: *warp-dialer-common")
-        lines.append(f"  server: {s_dialer}")
-        lines.append(f"  port: {p_dialer}")
+        lines.append(f"  - name: {DIALER_PROXY_BASE_NAME}-{tag}")
+        lines.append("    <<: *warp-dialer-common")
+        lines.append(f"    server: {s_dialer}")
+        lines.append(f"    port: {p_dialer}")
         lines.append("")
 
-        lines.append(f"- name: {entry_name}")
-        lines.append("  <<: *warp-entry-common")
-        lines.append(f"  server: {s_entry}")
-        lines.append(f"  port: {p_entry}")
-        lines.append(f"  dialer-proxy: {DIALER_PROXY_BASE_NAME}-{tag}")
+        lines.append(f"  - name: {entry_name}")
+        lines.append("    <<: *warp-entry-common")
+        lines.append(f"    server: {s_entry}")
+        lines.append(f"    port: {p_entry}")
+        lines.append(f"    dialer-proxy: {DIALER_PROXY_BASE_NAME}-{tag}")
         lines.append("")
 
-    lines.append("- name: MASQUE")
-    lines.append("  <<: *masque-common")
-    lines.append(f"  server: {MASQUE_SERVER}")
-    lines.append(f"  port: {MASQUE_PORT}")
-    lines.append(f"  sni: {MASQUE_SNI}")
+    lines.append("  - name: MASQUE")
+    lines.append("    <<: *masque-common")
+    lines.append(f"    server: {MASQUE_SERVER}")
+    lines.append(f"    port: {MASQUE_PORT}")
+    lines.append(f"    sni: {MASQUE_SNI}")
     lines.append("")
 
-    lines.append("- name: MASQUE-H2")
-    lines.append("  <<: *masque-common")
-    lines.append(f"  server: {MASQUE_SERVER}")
-    lines.append(f"  port: {MASQUE_PORT}")
-    lines.append(f"  sni: {MASQUE_SNI}")
-    lines.append("  network: h2")
+    lines.append("  - name: MASQUE-H2")
+    lines.append("    <<: *masque-common")
+    lines.append(f"    server: {MASQUE_SERVER}")
+    lines.append(f"    port: {MASQUE_PORT}")
+    lines.append(f"    sni: {MASQUE_SNI}")
+    lines.append("    network: h2")
     lines.append("")
 
     return "\n".join(lines)
@@ -354,34 +353,34 @@ def build_proxy_groups_block(dialer_names, entry_names):
 
     lines = ["proxy-groups:"]
 
-    lines.append(f"- name: {MAIN_SELECTOR_GROUP_NAME}")
-    lines.append("  type: select")
-    lines.append("  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/cf.svg")
-    lines.append("  proxies:")
+    lines.append(f"  - name: {MAIN_SELECTOR_GROUP_NAME}")
+    lines.append("    type: select")
+    lines.append("    icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/cf.svg")
+    lines.append("    proxies:")
     for p in all_proxies:
-        lines.append(f"    - {p}")
+        lines.append(f"      - {p}")
     lines.append("")
 
-    lines.append(f"- name: {DIALER_URL_TEST_GROUP_NAME}")
-    lines.append("  type: url-test")
-    lines.append("  url: https://www.gstatic.com/generate_204")
-    lines.append("  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/ir.svg")
-    lines.append("  interval: 180")
-    lines.append("  tolerance: 50")
-    lines.append("  proxies:")
+    lines.append(f"  - name: {DIALER_URL_TEST_GROUP_NAME}")
+    lines.append("    type: url-test")
+    lines.append("    url: https://www.gstatic.com/generate_204")
+    lines.append("    icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/ir.svg")
+    lines.append("    interval: 180")
+    lines.append("    tolerance: 50")
+    lines.append("    proxies:")
     for p in dialer_names:
-        lines.append(f"    - {p}")
+        lines.append(f"      - {p}")
     lines.append("")
 
-    lines.append(f"- name: {ENTRY_URL_TEST_GROUP_NAME}")
-    lines.append("  type: url-test")
-    lines.append("  url: http://speed.cloudflare.com")
-    lines.append("  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg")
-    lines.append("  interval: 180")
-    lines.append("  tolerance: 50")
-    lines.append("  proxies:")
+    lines.append(f"  - name: {ENTRY_URL_TEST_GROUP_NAME}")
+    lines.append("    type: url-test")
+    lines.append("    url: http://speed.cloudflare.com")
+    lines.append("    icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg")
+    lines.append("    interval: 180")
+    lines.append("    tolerance: 50")
+    lines.append("    proxies:")
     for p in entry_names:
-        lines.append(f"    - {p}")
+        lines.append(f"      - {p}")
     lines.append("")
 
     return "\n".join(lines)
@@ -434,7 +433,7 @@ def main():
         generation_time = datetime.datetime.now().isoformat()
         with open(OUTPUT_YAML_FILENAME, "w", encoding="utf-8") as f:
             f.write(
-                "# Generated configs for clash-meta with WireGuard proxies that have amnesia values.\n"
+                "# Generated configs for clash-meta with WireGuard proxies that have amnezia v2 parameters.\n"
             )
             f.write(f"# Time is: {generation_time}\n\n")
             f.write(output)
