@@ -2,18 +2,23 @@ mixed-port: 7890
 ipv6: false
 allow-lan: true
 mode: rule
-log-level: warning
+log-level: error
+find-process-mode: strict
+global-client-fingerprint: chrome
 keep-alive-idle: 10
 keep-alive-interval: 15
 unified-delay: true
 disable-keep-alive: false
 external-ui: ui
 external-controller: 127.0.0.1:9090
-external-ui-url: https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip
+external-ui-url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip"
 external-controller-cors:
   allow-origins:
     - "*"
   allow-private-network: true
+profile:
+  store-selected: true
+  store-fake-ip: true
 
 dns:
   enable: true
@@ -28,32 +33,34 @@ dns:
   nameserver:
     - https://1.1.1.1/dns-query
     - https://8.8.8.8/dns-query
+    - https://223.5.5.5/dns-query
+  fallback:
+    - tls://8.8.4.4
+    - tls://1.0.0.1
+    - tls://223.6.6.6
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
   fake-ip-filter:
     - "+.lan"
     - "+.local"
-    - "geosite:private"
+    - geosite:private
+
 tun:
   enable: true
+  mtu: 8880
   stack: mixed
   auto-route: true
-  strict-route: true
-  endpoint-independent-nat: false
+  auto-redirect: true
   auto-detect-interface: true
+  endpoint-independent-nat: false
   dns-hijack:
-    - any:53
-    - tcp://any:53
-  mtu: 9000
-sniffer:
-  enable: true
-  force-dns-mapping: true
-  parse-pure-ip: true
-  override-destination: true
+    - "any:53"
+    - "tcp://any:53"
 
 __PROXIES_BLOCK__
 __PROXY_GROUPS_BLOCK__
+
 rule-providers:
   phishing:
     type: http
@@ -111,6 +118,7 @@ rule-providers:
     url: https://raw.githubusercontent.com/Chocolate4U/Iran-clash-rules/release/ircidr.txt
     path: ./ruleset/ir-cidr.txt
     interval: 86400
+
 rules:
   - RULE-SET,phishing,REJECT
   - RULE-SET,malware,REJECT
@@ -121,6 +129,7 @@ rules:
   - RULE-SET,ir,DIRECT
   - RULE-SET,ir-cidr,DIRECT,no-resolve
   - MATCH,__SELECTOR_GROUP__
+
 ntp:
   enable: true
   server: time.cloudflare.com
