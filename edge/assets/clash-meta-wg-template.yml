@@ -23,9 +23,9 @@ profile:
 dns:
   enable: true
   ipv6: false
-  listen: 127.0.0.1:1053
   respect-rules: true
   use-system-hosts: false
+  listen: 127.0.0.1:1053
   default-nameserver:
     - 1.1.1.1
     - 8.8.8.8
@@ -38,6 +38,8 @@ dns:
     - tls://8.8.4.4
     - tls://1.0.0.1
     - tls://223.6.6.6
+  proxy-server-nameserver:
+    - 8.8.8.8#DIRECT
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter-mode: blacklist
@@ -60,7 +62,6 @@ tun:
 
 __PROXIES_BLOCK__
 __PROXY_GROUPS_BLOCK__
-
 rule-providers:
   phishing:
     type: http
