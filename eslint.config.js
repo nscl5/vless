@@ -33,7 +33,7 @@ export default [
       "sub/ProxyIP-Daily.md",
       "real address generator/**",
       "boringtun-boringtun-cli-0.5.2/**",
-      "edge/assets/clash-meta-wg-template.yml"
+      "edge/assets/clash-meta-wg-template.yml",
     ],
   },
 
