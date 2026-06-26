@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
 
-NUM_PROXY_PAIRS = int(os.environ.get("NUM_PROXY_PAIRS", 6))
+NUM_PROXY_PAIRS = int(os.environ.get("NUM_PROXY_PAIRS", 5))
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
@@ -271,7 +271,7 @@ def build_proxies_block(
     lines.append("    h2: 2")
     lines.append("    h4: 3")
     lines.append("    h3: 4")
-    lines.append("")
+    lines.append("    i1: <b 0xc800000001018800002b45615e996de27ff5ec5f583061ab38eac69fd8fec356802847cd1c7c15a87402bb0a433d4054defedc066e>")
 
     lines.append("warp-entry-common: &warp-entry-common")
     lines.append("  type: wireguard")
@@ -283,7 +283,7 @@ def build_proxies_block(
     lines.append("    - 0.0.0.0/0")
     lines.append(f"  reserved: {reserved_entry}")
     lines.append("  udp: true")
-    lines.append("  mtu: 1280")
+    lines.append("  mtu: 1120")
     lines.append("")
 
     lines.append("masque-common: &masque-common")
@@ -340,11 +340,11 @@ def build_proxies_block(
 def build_proxy_groups_block(dialer_names, entry_names):
     all_proxies = (
         [
-            DIALER_URL_TEST_GROUP_NAME,
             ENTRY_URL_TEST_GROUP_NAME,
+            DIALER_URL_TEST_GROUP_NAME,
+            "DIRECT",
             "MASQUE",
             "MASQUE-H2",
-            "DIRECT",
         ]
         + dialer_names
         + entry_names
@@ -354,9 +354,7 @@ def build_proxy_groups_block(dialer_names, entry_names):
 
     lines.append(f"- name: {MAIN_SELECTOR_GROUP_NAME}")
     lines.append("  type: select")
-    lines.append(
-        "  icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg"
-    )
+    lines.append("  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/cf.svg")
     lines.append("  proxies:")
     for p in all_proxies:
         lines.append(f"    - {p}")
@@ -375,10 +373,10 @@ def build_proxy_groups_block(dialer_names, entry_names):
 
     lines.append(f"- name: {ENTRY_URL_TEST_GROUP_NAME}")
     lines.append("  type: url-test")
-    lines.append("  url: https://www.gstatic.com/generate_204")
-    lines.append("  interval: 25")
-    lines.append("  tolerance: 50")
+    lines.append("  url: http://speed.cloudflare.com")
     lines.append("  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg")
+    lines.append("  interval: 180")
+    lines.append("  tolerance: 50")
     lines.append("  proxies:")
     for p in entry_names:
         lines.append(f"    - {p}")
