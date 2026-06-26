@@ -1,5 +1,5 @@
 # Generated configs for clash-meta with WireGuard proxies that have amnesia values.
-# Time is: 2026-06-26T10:44:06.387641
+# Time is: 2026-06-26T13:48:27.856151
 
 mixed-port: 7890
 ipv6: false
@@ -59,11 +59,11 @@ warp-dialer-common: &warp-dialer-common
   type: wireguard
   ip: 172.16.0.3/32
   ip-version: ipv4
-  private-key: AE3p3XWsUX667jNVfIla7LiygCH2M0IQiwVDPYEOZ0s=
+  private-key: wHaKS3kCmOxafuL8MJWnLNTLhEd0s9o/kZVXujmmrFM=
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
     - 0.0.0.0/0
-  reserved: DC/y
+  reserved: PFnU
   udp: true
   mtu: 1280
   amnezia-wg-option:
@@ -76,18 +76,18 @@ warp-dialer-common: &warp-dialer-common
     h2: 2
     h4: 3
     h3: 4
-
+    i1: <b 0xc800000001018800002b45615e996de27ff5ec5f583061ab38eac69fd8fec356802847cd1c7c15a87402bb0a433d4054defedc066e>
 warp-entry-common: &warp-entry-common
   type: wireguard
   ip: 172.16.0.2/32
   ip-version: ipv4
-  private-key: aLLgU9mTbbA4POZQh+MBvXSBnuv3b0CwxYh7qzGqzlk=
+  private-key: sEp7Q4Bkq2L5+0ZsWE06i0WUZt8Gnjz22KEQJlx8CWM=
   public-key: bmXOC+F1FxEMF9dyiK2H5/1SUtzH0JuVo51h2wPfgyo=
   allowed-ips:
     - 0.0.0.0/0
-  reserved: 9DUj
+  reserved: AY5N
   udp: true
-  mtu: 1280
+  mtu: 1120
 
 masque-common: &masque-common
   type: masque
@@ -105,69 +105,58 @@ masque-common: &masque-common
 proxies:
 - name: IR-DIALER-01
   <<: *warp-dialer-common
-  server: 188.114.97.158
-  port: 4177
+  server: 8.6.112.48
+  port: 987
 
 - name: EU-ENTRY-01
   <<: *warp-entry-common
-  server: 8.6.112.35
-  port: 864
+  server: 8.6.112.206
+  port: 7559
   dialer-proxy: IR-DIALER-01
 
 - name: IR-DIALER-02
   <<: *warp-dialer-common
-  server: 188.114.97.176
-  port: 1010
+  server: 8.6.112.244
+  port: 8742
 
 - name: EU-ENTRY-02
   <<: *warp-entry-common
-  server: 8.6.112.122
-  port: 8319
+  server: 188.114.97.118
+  port: 890
   dialer-proxy: IR-DIALER-02
 
 - name: IR-DIALER-03
   <<: *warp-dialer-common
-  server: 8.6.112.21
-  port: 1180
+  server: 188.114.97.204
+  port: 7152
 
 - name: EU-ENTRY-03
   <<: *warp-entry-common
-  server: 188.114.97.154
-  port: 2506
+  server: 188.114.97.169
+  port: 1002
   dialer-proxy: IR-DIALER-03
 
 - name: IR-DIALER-04
   <<: *warp-dialer-common
-  server: 8.6.112.189
-  port: 878
+  server: 188.114.97.218
+  port: 943
 
 - name: EU-ENTRY-04
   <<: *warp-entry-common
-  server: 188.114.97.222
-  port: 7152
+  server: 8.6.112.9
+  port: 903
   dialer-proxy: IR-DIALER-04
 
 - name: IR-DIALER-05
   <<: *warp-dialer-common
-  server: 188.114.97.9
-  port: 942
+  server: 188.114.97.5
+  port: 939
 
 - name: EU-ENTRY-05
   <<: *warp-entry-common
-  server: 8.6.112.80
-  port: 880
+  server: 188.114.97.101
+  port: 8854
   dialer-proxy: IR-DIALER-05
-
-- name: IR-DIALER-06
-  <<: *warp-dialer-common
-  server: 188.114.97.190
-  port: 3138
-
-- name: EU-ENTRY-06
-  <<: *warp-entry-common
-  server: 8.6.112.35
-  port: 7152
-  dialer-proxy: IR-DIALER-06
 
 - name: MASQUE
   <<: *masque-common
@@ -185,25 +174,23 @@ proxies:
 proxy-groups:
 - name: ⚪ PROXIES
   type: select
-  icon: https://www.vectorlogo.zone/logos/cloudflare/cloudflare-icon.svg
+  icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/cf.svg
   proxies:
-    - 🇮🇷 AUTO-IR-DIALER
     - 🇪🇺 AUTO-EU-ENTRY
+    - 🇮🇷 AUTO-IR-DIALER
+    - DIRECT
     - MASQUE
     - MASQUE-H2
-    - DIRECT
     - IR-DIALER-01
     - IR-DIALER-02
     - IR-DIALER-03
     - IR-DIALER-04
     - IR-DIALER-05
-    - IR-DIALER-06
     - EU-ENTRY-01
     - EU-ENTRY-02
     - EU-ENTRY-03
     - EU-ENTRY-04
     - EU-ENTRY-05
-    - EU-ENTRY-06
 
 - name: 🇮🇷 AUTO-IR-DIALER
   type: url-test
@@ -217,21 +204,19 @@ proxy-groups:
     - IR-DIALER-03
     - IR-DIALER-04
     - IR-DIALER-05
-    - IR-DIALER-06
 
 - name: 🇪🇺 AUTO-EU-ENTRY
   type: url-test
-  url: https://www.gstatic.com/generate_204
-  interval: 25
-  tolerance: 50
+  url: http://speed.cloudflare.com
   icon: https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/eu.svg
+  interval: 180
+  tolerance: 50
   proxies:
     - EU-ENTRY-01
     - EU-ENTRY-02
     - EU-ENTRY-03
     - EU-ENTRY-04
     - EU-ENTRY-05
-    - EU-ENTRY-06
 
 rule-providers:
   phishing:
