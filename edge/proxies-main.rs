@@ -126,24 +126,17 @@ async fn main() -> Result<()> {
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
         .build()?;
 
-    let mut candidate_ips: Vec<(String, u32)> = Vec::new();
+    let mut asn_prefixes: Vec<(String, u32, Vec<String>)> = Vec::new();
 
     for (name, asn) in ASN_LIST.iter() {
         println!("Fetching prefixes for {} (AS{})", name, asn);
         let prefixes = fetch_asn_prefixes(&client, *asn).await.unwrap_or_default();
         println!("  -> {} prefixes found", prefixes.len());
-
-        for prefix in prefixes {
-            if let Some(ips) = sample_ips_from_cidr(&prefix) {
-                for ip in ips {
-                    candidate_ips.push((ip, *asn));
-                }
-            }
-        }
-
+        asn_prefixes.push((name.to_string(), *asn, prefixes));
         tokio::time::sleep(Duration::from_millis(600)).await;
     }
-
+    
+    let mut candidate_ips = build_candidate_ips(&asn_prefixes);
     candidate_ips.shuffle(&mut rand::thread_rng());
     println!("Total candidate IPs to scan: {}", candidate_ips.len());
 
@@ -152,7 +145,7 @@ async fn main() -> Result<()> {
 
     let active_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<ProxyInfo>>::new()));
 
-    let tasks = futures::stream::iter(candidate_ips.into_iter().map(|(ip, _asn)| {
+    let tasks = futures::stream::iter(candidate_ips.into_iter().map(|ip| {
         let active_proxies = Arc::clone(&active_proxies);
         let self_ip = self_ip.clone();
         async move {
@@ -215,6 +208,46 @@ fn sample_ips_from_cidr(cidr: &str) -> Option<Vec<String>> {
     }
 
     Some(ips)
+}
+
+const TOTAL_IP_BUDGET: usize = 3000;
+
+fn build_candidate_ips(asn_prefixes: &[(String, u32, Vec<String>)]) -> Vec<String> {
+    let mut result = Vec::new();
+    let active_asns: Vec<_> = asn_prefixes.iter().filter(|(_, _, p)| !p.is_empty()).collect();
+    if active_asns.is_empty() {
+        return result;
+    }
+
+    let per_asn_budget = TOTAL_IP_BUDGET / active_asns.len();
+
+    for (_name, _asn, prefixes) in active_asns.iter() {
+        let mut sorted_prefixes: Vec<Ipv4Network> = prefixes
+            .iter()
+            .filter_map(|p| p.parse().ok())
+            .collect();
+
+        sorted_prefixes.sort_by_key(|n| std::cmp::Reverse(n.prefix()));
+        sorted_prefixes.shuffle(&mut rand::thread_rng());
+
+        let mut collected = 0;
+        for network in sorted_prefixes.iter() {
+            if collected >= per_asn_budget {
+                break;
+            }
+            let remaining = per_asn_budget - collected;
+            let take = remaining.min(network.size() as usize).min(50);
+
+            let mut ips: Vec<String> = network.iter().map(|ip| ip.to_string()).collect();
+            ips.shuffle(&mut rand::thread_rng());
+            ips.truncate(take);
+
+            collected += ips.len();
+            result.extend(ips);
+        }
+    }
+
+    result
 }
 
 async fn fetch_self_ip(client: &Client) -> Result<String> {
