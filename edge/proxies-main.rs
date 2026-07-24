@@ -80,15 +80,15 @@ async fn main() -> Result<()> {
         Err(e) => println!("Warning: could not read proxy file: {}", e),
     }
 
-    match std::env::var("PROXY_DOMAINS") {
-        Ok(raw_domains) => {
-            let domains: Vec<String> = raw_domains
+    match std::env::var("RE_NORTHERN_TERRITORY") {
+        Ok(raw_RE) => {
+            let domains: Vec<String> = raw_RE
                 .lines()
                 .map(|l| l.trim().to_string())
                 .filter(|l| !l.is_empty())
                 .collect();
 
-            println!("Resolving {} domains from secret...", domains.len());
+            println!("Resolving {} REvil sheets from secret...", domains.len());
 
             for domain in domains.iter() {
                 match resolve_domain(domain).await {
@@ -103,7 +103,7 @@ async fn main() -> Result<()> {
                 }
             }
         }
-        Err(_) => println!("PROXY_DOMAINS not set, skipping domain-based candidates"),
+        Err(_) => println!("RE_NORTHERN_TERRITORY not set, skipping REvil-based candidates"),
     }
 
     println!("Total unique candidates (port {} only): {}", TARGET_PORT, candidates.len());
