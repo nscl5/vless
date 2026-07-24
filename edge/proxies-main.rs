@@ -93,9 +93,9 @@ async fn main() -> Result<()> {
                     proxy_candidates.push((ip, port, isp));
                 }
             }
-            println!("System: Loaded {} proxy_candidates from file", proxy_candidates.len());
+            println!("📋 Picked up {} candidates from the proxy list", proxy_candidates.len());
         }
-        Err(e) => println!("System Warning: Could not read proxy file: {}", e),
+        Err(e) => println!("⚠️  Heads up — couldn't read the proxy file: {}", e),
     }
 
     if let Ok(raw_domains) = std::env::var(NORTHERN_TERRITORY_ENV) {
@@ -105,7 +105,7 @@ async fn main() -> Result<()> {
             .filter(|l| !l.is_empty())
             .collect();
 
-        println!("System: Resolving {} domains from Northern Territory", domains.len());
+        println!("🔍 Resolving {} domain(s) from the Northern Territory...", domains.len());
         for domain in domains {
             if let Ok(ips) = resolve_domain(&domain).await {
                 for ip in ips {
@@ -117,13 +117,13 @@ async fn main() -> Result<()> {
         }
     }
 
-    println!("System: Total unique proxy_candidates for scanning: {}", proxy_candidates.len());
+    println!("🧮 A total of {} unique candidates queued for scanning", proxy_candidates.len());
 
     let scanner_ip = match get_scanner_ip().await {
         Ok(ip) => ip,
         Err(_) => "0.0.0.0".to_string(),
     };
-    println!("System: Origin IP identified as: {}\n", scanner_ip);
+    println!("📍 Our own exit IP looks like: {}\n", scanner_ip);
 
     let validated_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<ProxyInfo>>::new()));
 
@@ -131,7 +131,7 @@ async fn main() -> Result<()> {
     let live_count = Arc::new(AtomicUsize::new(0));
     let failed_count = Arc::new(AtomicUsize::new(0));
 
-    println!("::group::🐾 Live Scanning Details (Click to Expand)");
+    println!("::group::🐾 Live Scan — tap to peek");
 
     let tasks = futures::stream::iter(proxy_candidates.into_iter().map(|(ip, port, isp_source)| {
         let validated_proxies = Arc::clone(&validated_proxies);
@@ -160,20 +160,20 @@ async fn main() -> Result<()> {
     let total_failed = failed_count.load(Ordering::Relaxed);
 
     println!("\n{}", "==================================================".cyan().bold());
-    println!("{}", "       🌌 PROXY SCANNER EXECUTION SUMMARY        ".cyan().bold());
+    println!("{}", "         🌌  SCAN WRAPPED — HERE'S THE LOWDOWN       ".cyan().bold());
     println!("{}\n", "==================================================".cyan().bold());
-    println!("  🧶 Total Candidates Tested : {}", total_candidates.to_string().bold());
-    println!("  🟢 Live Proxies Found      : {}", total_live.to_string().green().bold());
-    println!("  🔴 Failed / Timeout        : {}", total_failed.to_string().red());
-    println!("  🌐 Active Countries        : {}", locked_proxies.len().to_string().yellow().bold());
+    println!("  🧶 Candidates tested  : {}", total_candidates.to_string().bold());
+    println!("  🟢 Alive & kicking    : {}", total_live.to_string().green().bold());
+    println!("  🔴 Dead / timed out   : {}", total_failed.to_string().red());
+    println!("  🌐 Countries covered  : {}", locked_proxies.len().to_string().yellow().bold());
     println!("\n{}", "--------------------------------------------------".dimmed());
-    println!("{}", "🪩 Active Proxies per Country:".bold());
+    println!("{}", "🪩  Active proxies per country:".bold());
     
     for (country_code, proxies) in locked_proxies.iter() {
         let flag = generate_country_flag_emoji(country_code);
         let country_name = get_country_name(country_code);
         println!(
-            "   {} {:<20} ({}) : {} proxies",
+            "   {} {:<20} ({}) : {} working",
             flag,
             country_name.cyan(),
             country_code.bold(),
@@ -182,7 +182,7 @@ async fn main() -> Result<()> {
     }
     println!("{}\n", "==================================================".cyan().bold());
 
-    println!("System: Workflow completed successfully.");
+    println!("🎉 All done — everything wrapped up nicely.");
     Ok(())
 }
 
@@ -272,7 +272,7 @@ async fn scan_candidate(
 
     if make_http_request(IP_RESOLVER_HOST, CLOUDFLARE_INDEX_ENDPOINT, Some((&ip, port)), &mut cookie_jar, false).await.is_err() {
         failed_count.fetch_add(1, Ordering::Relaxed);
-        println!("  ❌ {:<7} | {:<15} | Error: {}", "FAILED".red().bold(), ip, "Connection Error".dimmed());
+        println!("  ❌ {:<7} | {:<15} | {}", "DEAD".red().bold(), ip, "couldn't connect".dimmed());
         return;
     }
 
@@ -312,8 +312,8 @@ async fn scan_candidate(
                         let flag = generate_country_flag_emoji(&info.country_code);
 
                         println!(
-                            "  ✅ {:<7} | {:<15} | Risk: {:<17} | Score: {:<3} | Loc: {} {}",
-                            "LIVE".green().bold(),
+                            "  ✅ {:<7} | {:<15} | Risk: {:<17} | Score: {:<3} | {} {}",
+                            "ALIVE".green().bold(),
                             ip.bold(),
                             risk_badge,
                             info.fraud_score,
@@ -328,11 +328,11 @@ async fn scan_candidate(
                 }
             }
             failed_count.fetch_add(1, Ordering::Relaxed);
-            println!("  ❌ {:<7} | {:<15} | Error: {}", "FAILED".red().bold(), ip, "Invalid JSON/Origin".dimmed());
+            println!("  ❌ {:<7} | {:<15} | {}", "DEAD".red().bold(), ip, "response didn't check out".dimmed());
         }
         Err(_) => {
             failed_count.fetch_add(1, Ordering::Relaxed);
-            println!("  ❌ {:<7} | {:<15} | Error: {}", "FAILED".red().bold(), ip, "Meta Request Failed".dimmed());
+            println!("  ❌ {:<7} | {:<15} | {}", "DEAD".red().bold(), ip, "meta request fell over".dimmed());
         }
     }
 }
@@ -582,7 +582,7 @@ fn write_markdown_report(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, 
         writeln!(file, "\n</details>\n\n---\n\n")?;
     }
 
-    println!("System: Markdown file updated successfully at {}", output_file);
+    println!("📝 Markdown report refreshed at {}", output_file);
     Ok(())
 }
 
