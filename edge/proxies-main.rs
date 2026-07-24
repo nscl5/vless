@@ -3,11 +3,10 @@ use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use chrono::{Duration as ChronoDuration, Utc};
 use chrono_tz::Asia::Tehran;
-use colored::*;
 use futures::StreamExt;
 use native_tls::TlsConnector as NativeTlsConnector;
 use serde_json::Value;
@@ -26,8 +25,8 @@ const MAX_CONCURRENT: usize = 150;
 const TIMEOUT_SECONDS: u64 = 8;
 const TARGET_PORT: u16 = 443;
 
-const PRIVATE_SOURCES_ENV: &str = "PRIVATE_PROXY_DOMAINS";
 const LEGACY_SOURCES_ENV: &str = "RE_NORTHERN_TERRITORY";
+const RISK_API_ENV: &str = "RISK_API_HOST";
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -39,6 +38,8 @@ struct ProxyInfo {
     country_code: String,
     city: String,
     region: String,
+    fraud_score: i64,
+    risk: String,
 }
 
 #[derive(Debug, Clone)]
@@ -74,9 +75,7 @@ impl CookieJar {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    println!("==========================================");
-    println!("   CLOUDFLARE PROXY SCANNER & GENERATOR   ");
-    println!("==========================================");
+    let api_host = std::env::var(RISK_API_ENV).expect("Environment variable RISK_API_HOST is missing");
 
     if let Some(parent) = Path::new(DEFAULT_OUTPUT_FILE).parent() {
         fs::create_dir_all(parent)?;
@@ -86,7 +85,6 @@ async fn main() -> Result<()> {
     let mut seen_ips: HashSet<String> = HashSet::new();
     let mut candidates: Vec<(String, u16, String)> = Vec::new();
 
-    // 1. Read proxy list from CSV/Text file
     match read_proxy_file(DEFAULT_PROXY_FILE) {
         Ok(list) => {
             for (ip, port, isp) in list {
@@ -94,23 +92,19 @@ async fn main() -> Result<()> {
                     candidates.push((ip, port, isp));
                 }
             }
-            println!("Loaded {} candidates from {}", candidates.len(), DEFAULT_PROXY_FILE);
+            println!("System: Loaded {} candidates from file", candidates.len());
         }
-        Err(e) => println!("Warning: could not read proxy file: {}", e),
+        Err(e) => println!("System Warning: Could not read proxy file: {}", e),
     }
 
-    // 2. Resolve private domain candidates from Environment Variables
-    let private_sources = std::env::var(PRIVATE_SOURCES_ENV)
-        .or_else(|_| std::env::var(LEGACY_SOURCES_ENV));
-
-    if let Ok(raw) = private_sources {
+    if let Ok(raw) = std::env::var(LEGACY_SOURCES_ENV) {
         let domains: Vec<String> = raw
             .lines()
             .map(|l| l.trim().to_string())
             .filter(|l| !l.is_empty())
             .collect();
 
-        println!("Resolving {} private domains from secret...", domains.len());
+        println!("System: Resolving {} domains from secrets", domains.len());
         for domain in domains {
             if let Ok(ips) = resolve_domain(&domain).await {
                 for ip in ips {
@@ -122,26 +116,22 @@ async fn main() -> Result<()> {
         }
     }
 
-    println!("Total unique candidates (port 443 only): {}", candidates.len());
+    println!("System: Total unique candidates for scanning: {}", candidates.len());
 
-    // 3. Fetch real IP
     let self_ip = match get_original_ip_info().await {
         Ok(ip) => ip,
-        Err(e) => {
-            println!("{}", format!("WARNING: could not determine self IP ({}).", e).yellow());
-            "0.0.0.0".to_string()
-        }
+        Err(_) => "0.0.0.0".to_string(),
     };
-    println!("Your real IP: {}", self_ip);
+    println!("System: Origin IP identified as: {}", self_ip);
 
-    let active_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<(ProxyInfo, u128)>>::new()));
+    let active_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<ProxyInfo>>::new()));
 
-    // 4. Concurrently scan candidates
     let tasks = futures::stream::iter(candidates.into_iter().map(|(ip, port, csv_isp)| {
         let active_proxies = Arc::clone(&active_proxies);
         let self_ip = self_ip.clone();
+        let api_host = api_host.clone();
         async move {
-            scan_candidate(ip, port, csv_isp, &active_proxies, &self_ip).await;
+            scan_candidate(ip, port, csv_isp, &active_proxies, &self_ip, &api_host).await;
         }
     }))
     .buffer_unordered(MAX_CONCURRENT)
@@ -149,11 +139,10 @@ async fn main() -> Result<()> {
 
     tasks.await;
 
-    // 5. Generate Markdown Output
     let locked_proxies = active_proxies.lock().unwrap_or_else(|e| e.into_inner());
     write_markdown_file(&locked_proxies, DEFAULT_OUTPUT_FILE)?;
 
-    println!("Proxy checking completed successfully.");
+    println!("System: Workflow completed successfully.");
     Ok(())
 }
 
@@ -195,7 +184,7 @@ async fn resolve_domain(domain: &str) -> Result<Vec<String>> {
 async fn get_original_ip_info() -> Result<String> {
     let mut cookie_jar = CookieJar::new();
     let _ = make_request(IP_RESOLVER, PATH_HOME, None, &mut cookie_jar, false).await;
-    let (_, body, _) = make_request(IP_RESOLVER, PATH_META, None, &mut cookie_jar, true).await?;
+    let (_, body) = make_request(IP_RESOLVER, PATH_META, None, &mut cookie_jar, true).await?;
     let json = parse_json_response(&body)?;
 
     json.get("clientIp")
@@ -204,24 +193,66 @@ async fn get_original_ip_info() -> Result<String> {
         .ok_or_else(|| "No clientIp in response".into())
 }
 
+async fn fetch_risk_data(ip: &str, api_host: &str) -> Result<(i64, String)> {
+    let timeout = Duration::from_secs(TIMEOUT_SECONDS);
+    tokio::time::timeout(timeout, async {
+        let stream = TcpStream::connect(format!("{}:443", api_host)).await?;
+        let native_connector = NativeTlsConnector::builder()
+            .danger_accept_invalid_certs(true)
+            .build()?;
+        let tokio_connector = TokioTlsConnector::from(native_connector);
+
+        let mut tls_stream = tokio_connector.connect(api_host, stream).await?;
+        let request = format!(
+            "GET /{} HTTP/1.1\r\nHost: {}\r\nUser-Agent: RustClient/1.0\r\nConnection: close\r\n\r\n",
+            ip, api_host
+        );
+        tls_stream.write_all(request.as_bytes()).await?;
+
+        let mut response_bytes = Vec::new();
+        let mut buffer = [0u8; 8192];
+
+        loop {
+            match tls_stream.read(&mut buffer).await {
+                Ok(0) => break,
+                Ok(n) => response_bytes.extend_from_slice(&buffer[..n]),
+                Err(_) => break,
+            }
+        }
+
+        let response_str = String::from_utf8_lossy(&response_bytes).to_string();
+        if let Some(pos) = response_str.find("\r\n\r\n") {
+            let body_part = &response_str[pos + 4..];
+            if let Ok(val) = serde_json::from_str::<Value>(body_part) {
+                let score = val.get("fraud_score").and_then(|v| v.as_i64()).unwrap_or(100);
+                let risk = val.get("risk").and_then(|v| v.as_str()).unwrap_or("high").to_string();
+                return Ok((score, risk));
+            }
+        }
+        Err("Invalid API Response".into())
+    })
+    .await
+    .map_err(|_| Box::<dyn std::error::Error + Send + Sync>::from("Timeout"))?
+}
+
 async fn scan_candidate(
     ip: String,
     port: u16,
     csv_isp: String,
-    active_proxies: &Arc<Mutex<BTreeMap<String, Vec<(ProxyInfo, u128)>>>>,
+    active_proxies: &Arc<Mutex<BTreeMap<String, Vec<ProxyInfo>>>>,
     self_ip: &str,
+    api_host: &str,
 ) {
     let mut cookie_jar = CookieJar::new();
 
-    // Step 1: Visit / to get cookies
+    println!("Action: Connecting to candidate {}", ip);
+
     if make_request(IP_RESOLVER, PATH_HOME, Some((&ip, port)), &mut cookie_jar, false).await.is_err() {
-        println!("{}", format!("PROXY DEAD ❌: {}:443 (Connection / Home failed)", ip).red());
         return;
     }
 
-    // Step 2: Visit /meta with cookies
     match make_request(IP_RESOLVER, PATH_META, Some((&ip, port)), &mut cookie_jar, true).await {
-        Ok((_, body, ping)) => {
+        Ok((_, body)) => {
             if let Ok(json) = parse_json_response(&body) {
                 if let Some(out_ip) = json.get("clientIp").and_then(|v| v.as_str()) {
                     if out_ip != self_ip {
@@ -231,6 +262,11 @@ async fn scan_candidate(
                             .map(String::from)
                             .unwrap_or(csv_isp);
 
+                        println!("Action: Analyzing risk profile for {}", ip);
+                        let (fraud_score, risk) = fetch_risk_data(&ip, api_host)
+                            .await
+                            .unwrap_or((100, "high".to_string()));
+
                         let info = ProxyInfo {
                             ip: ip.clone(),
                             port,
@@ -238,24 +274,19 @@ async fn scan_candidate(
                             country_code: json.get("country").and_then(|v| v.as_str()).unwrap_or("XX").to_string(),
                             city: json.get("city").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
                             region: json.get("region").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
+                            fraud_score,
+                            risk,
                         };
 
-                        println!(
-                            "{}",
-                            format!("PROXY LIVE 🟩: {}:{} ({} ms) - {}", ip, port, ping, info.city).green()
-                        );
+                        println!("Result: Approved {} with Fraud Score: {} ({})", ip, info.fraud_score, info.risk);
 
                         let mut locked = active_proxies.lock().unwrap_or_else(|e| e.into_inner());
-                        locked.entry(info.country_code.clone()).or_default().push((info, ping));
-                        return;
+                        locked.entry(info.country_code.clone()).or_default().push(info);
                     }
                 }
             }
-            println!("{}", format!("PROXY DEAD ❌: {}:443 (Invalid JSON or Self-IP match)", ip).red());
         }
-        Err(e) => {
-            println!("{}", format!("PROXY DEAD ❌: {}:443 ({})", ip, e).red());
-        }
+        Err(_) => {}
     }
 }
 
@@ -265,9 +296,8 @@ async fn make_request(
     proxy: Option<(&str, u16)>,
     cookie_jar: &mut CookieJar,
     is_meta: bool,
-) -> Result<(String, String, u128)> {
+) -> Result<(String, String)> {
     let timeout = Duration::from_secs(TIMEOUT_SECONDS);
-    let start_time = Instant::now();
 
     tokio::time::timeout(timeout, async {
         let mut headers = Vec::new();
@@ -318,16 +348,15 @@ async fn make_request(
             }
         }
 
-        let ping = start_time.elapsed().as_millis();
         let response_str = String::from_utf8_lossy(&response_bytes).to_string();
 
         if let Some(pos) = response_str.find("\r\n\r\n") {
             let headers_part = &response_str[..pos];
             let body_part = response_str[pos + 4..].to_string();
             cookie_jar.add_from_headers(headers_part);
-            Ok((headers_part.to_string(), body_part, ping))
+            Ok((headers_part.to_string(), body_part))
         } else {
-            Ok(("".to_string(), response_str, ping))
+            Ok(("".to_string(), response_str))
         }
     })
     .await
@@ -355,17 +384,11 @@ fn parse_json_response(body: &str) -> Result<Value> {
     Err("Invalid JSON response".into())
 }
 
-fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<(ProxyInfo, u128)>>, output_file: &str) -> io::Result<()> {
+fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, output_file: &str) -> io::Result<()> {
     let mut file = File::create(output_file)?;
 
     let total_active = proxies_by_country.values().map(|v| v.len()).sum::<usize>();
     let total_countries = proxies_by_country.len();
-    let avg_ping = if total_active > 0 {
-        let sum_ping: u128 = proxies_by_country.values().flatten().map(|(_, p)| *p).sum();
-        sum_ping / total_active as u128
-    } else {
-        0
-    };
 
     let now = Utc::now();
     let tehran_now = now.with_timezone(&Tehran);
@@ -389,7 +412,6 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<(ProxyInfo, u12
     let next_badge = format!("<img src=\"https://img.shields.io/badge/Next_Update-{}-966600\" />", next_badge_label);
     let active_badge = format!("<img src=\"https://img.shields.io/badge/Active_Proxies-{}-966600\" />", total_active);
     let countries_badge = format!("<img src=\"https://img.shields.io/badge/Countries-{}-966600\" />", total_countries);
-    let latency_badge = format!("<img src=\"https://img.shields.io/badge/Avg_Latency-{}ms-darkred\" />", avg_ping);
 
     writeln!(
         file,
@@ -415,7 +437,6 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<(ProxyInfo, u12
 >
 > {active}  
 > {countries}  
-> {latency}
 >
 > <br><br/>  
 "##,
@@ -423,22 +444,21 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<(ProxyInfo, u12
         next = next_badge,
         active = active_badge,
         countries = countries_badge,
-        latency = latency_badge,
     )?;
 
     let top_providers = ["Google", "Amazon", "Cloudflare", "Tencent", "Hetzner"];
 
-    let mut provider_buckets: HashMap<&str, Vec<(ProxyInfo, u128)>> = HashMap::new();
+    let mut provider_buckets: HashMap<&str, Vec<ProxyInfo>> = HashMap::new();
     for prov in top_providers.iter() {
         provider_buckets.insert(prov, Vec::new());
     }
 
-    for (_country, proxies) in proxies_by_country.iter() {
-        for (info, ping) in proxies.iter() {
+    for proxies in proxies_by_country.values() {
+        for info in proxies.iter() {
             for prov in top_providers.iter() {
                 if info.isp.to_lowercase().contains(&prov.to_lowercase()) {
                     if let Some(vec) = provider_buckets.get_mut(prov) {
-                        vec.push((info.clone(), *ping));
+                        vec.push(info.clone());
                     }
                 }
             }
@@ -456,24 +476,22 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<(ProxyInfo, u12
                 writeln!(file, "## {} ({})", prov_title, list.len())?;
                 writeln!(file, "<details>")?;
                 writeln!(file, "<summary>Click to expand</summary>\n")?;
-                writeln!(file, "|   IP   |   ISP    |   Location   |   Ping   |")?;
-                writeln!(file, "|:-------|:---------|:------------:|:--------:|")?;
+                writeln!(file, "|   IP   |   ISP    |   Location   |   Risk Score   |")?;
+                writeln!(file, "|:-------|:---------|:------------:|:--------------:|")?;
                 let mut sorted = list.clone();
-                sorted.sort_by_key(|&(_, p)| p);
-                for (info, ping) in sorted.iter() {
+                sorted.sort_by_key(|info| info.fraud_score);
+                for info in sorted.iter() {
                     let location = format!("{}, {}", info.region, info.city);
-                    let emoji = if *ping < 1099 {
-                        "⚡"
-                    } else if *ping < 1599 {
-                        "🐇"
-                    } else {
-                        "🐌"
+                    let emoji = match info.risk.to_lowercase().as_str() {
+                        "low" => "⚪",
+                        "medium" => "🟡",
+                        _ => "⚫",
                     };
 
                     writeln!(
                         file,
-                        "| <pre><code>{}</code></pre> | {} | {} | {} ms {} |",
-                        info.ip, info.isp, location, ping, emoji
+                        "| <pre><code>{}</code></pre> | {} | {} | {} {} |",
+                        info.ip, info.isp, location, info.fraud_score, emoji
                     )?;
                 }
                 writeln!(file, "\n</details>\n\n---\n")?;
@@ -483,7 +501,7 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<(ProxyInfo, u12
 
     for (country_code, proxies) in proxies_by_country.iter() {
         let mut sorted_proxies = proxies.clone();
-        sorted_proxies.sort_by_key(|&(_, ping)| ping);
+        sorted_proxies.sort_by_key(|info| info.fraud_score);
         let flag = country_flag(country_code);
         let name = get_country_name(country_code);
 
@@ -496,30 +514,28 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<(ProxyInfo, u12
         )?;
         writeln!(file, "<details>")?;
         writeln!(file, "<summary>Click to expand</summary>\n")?;
-        writeln!(file, "|   IP   |   ISP   |   Location   |   Ping   |")?;
-        writeln!(file, "|:-------|:--------|:------------:|:--------:|")?;
+        writeln!(file, "|   IP   |   ISP   |   Location   |   Risk Score   |")?;
+        writeln!(file, "|:-------|:--------|:------------:|:--------------:|")?;
 
-        for (info, ping) in sorted_proxies.iter() {
+        for info in sorted_proxies.iter() {
             let location = format!("{}, {}", info.region, info.city);
-            let emoji = if *ping < 1099 {
-                "⚡"
-            } else if *ping < 1599 {
-                "🐇"
-            } else {
-                "🐌"
+            let emoji = match info.risk.to_lowercase().as_str() {
+                "low" => "⚪",
+                "medium" => "🟡",
+                _ => "⚫",
             };
 
             writeln!(
                 file,
-                "| <pre><code>{}</code></pre> | {} | {} | {} ms {} |",
-                info.ip, info.isp, location, ping, emoji
+                "| <pre><code>{}</code></pre> | {} | {} | {} {} |",
+                info.ip, info.isp, location, info.fraud_score, emoji
             )?;
         }
 
         writeln!(file, "\n</details>\n\n---\n")?;
     }
 
-    println!("All active proxies saved to {}", output_file);
+    println!("System: Markdown file updated successfully at {}", output_file);
     Ok(())
 }
 
