@@ -14,28 +14,22 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio_native_tls::TlsConnector as TokioTlsConnector;
 
-/// IP resolver service endpoint
 const IP_RESOLVER_HOST: &str = "speed.cloudflare.com";
-/// Cloudflare IP detection initialization endpoint
 const CLOUDFLARE_INDEX_ENDPOINT: &str = "/";
-/// Cloudflare IP detection metadata endpoint
 const CLOUDFLARE_META_ENDPOINT: &str = "/meta";
 
-const DEFAULT_PROXY_FILE: &str = "edge/assets/p-list-july.txt";
+const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.yaml";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
 
 const MAX_CONCURRENT_SCANS: usize = 150;
 const TIMEOUT_SECONDS: u64 = 8;
 const TARGET_PROXY_PORT: u16 = 443;
 
-/// Environment variable for legacy proxy source domains
-const LEGACY_PROXY_DOMAINS_ENV: &str = "LEGACY_PROXY_DOMAINS";
-/// Environment variable for risk assessment API host
+const NORTHERN_TERRITORY_ENV: &str = "NORTHERN_TERRITORY";
 const RISK_API_HOST_ENV: &str = "RISK_API_HOST";
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
-/// Risk assessment data for a proxy IP
 #[derive(Debug, Clone)]
 struct RiskAssessment {
     fraud_score: i64,
@@ -53,7 +47,6 @@ impl RiskAssessment {
     }
 }
 
-/// Proxy candidate information before scanning
 #[derive(Debug, Clone)]
 struct ProxyCandidate {
     ip: String,
@@ -61,7 +54,6 @@ struct ProxyCandidate {
     isp_source: String,
 }
 
-/// Validated proxy information after successful scan
 #[derive(Debug, Clone)]
 struct ProxyInfo {
     ip: String,
@@ -74,7 +66,6 @@ struct ProxyInfo {
     risk_level: String,
 }
 
-/// HTTP cookie jar for maintaining session state
 #[derive(Debug, Clone)]
 struct CookieJar {
     cookies: Vec<String>,
@@ -85,7 +76,6 @@ impl CookieJar {
         Self { cookies: Vec::new() }
     }
 
-    /// Extract cookies from HTTP response headers
     fn add_from_headers(&mut self, headers: &str) {
         for line in headers.lines() {
             let line_lower = line.to_lowercase();
@@ -98,7 +88,6 @@ impl CookieJar {
         }
     }
 
-    /// Format cookies as HTTP header string
     fn to_header(&self) -> String {
         if self.cookies.is_empty() {
             String::new()
@@ -113,7 +102,6 @@ async fn main() -> Result<()> {
     let api_host = std::env::var(RISK_API_HOST_ENV)
         .expect("Environment variable RISK_API_HOST is missing");
 
-    // Create output directory if it doesn't exist
     if let Some(parent) = Path::new(DEFAULT_OUTPUT_FILE).parent() {
         fs::create_dir_all(parent)?;
     }
@@ -122,8 +110,7 @@ async fn main() -> Result<()> {
     let mut seen_ips: HashSet<String> = HashSet::new();
     let mut proxy_candidates: Vec<ProxyCandidate> = Vec::new();
 
-    // Load proxy candidates from file
-    match read_proxy_file(DEFAULT_PROXY_FILE) {
+    match read_proxy_file(NORTHERN_TERRITORY) {
         Ok(candidates) => {
             for candidate in candidates {
                 if candidate.port == TARGET_PROXY_PORT && seen_ips.insert(candidate.ip.clone()) {
@@ -138,8 +125,7 @@ async fn main() -> Result<()> {
         Err(e) => println!("System Warning: Could not read proxy file: {}", e),
     }
 
-    // Load legacy proxy sources from environment
-    if let Ok(raw_domains) = std::env::var(LEGACY_PROXY_DOMAINS_ENV) {
+    if let Ok(raw_domains) = std::env::var(NORTHERN_TERRITORY_ENV) {
         let domains: Vec<String> = raw_domains
             .lines()
             .map(|line| line.trim().to_string())
@@ -147,7 +133,7 @@ async fn main() -> Result<()> {
             .collect();
 
         println!(
-            "System: Resolving {} domains from legacy sources",
+            "System: Resolving {} domains from Northern Territory",
             domains.len()
         );
         for domain in domains {
@@ -170,19 +156,16 @@ async fn main() -> Result<()> {
         proxy_candidates.len()
     );
 
-    // Identify scanner's own IP to filter proxies
     let scanner_ip = match get_scanner_ip().await {
         Ok(ip) => ip,
         Err(_) => "0.0.0.0".to_string(),
     };
     println!("System: Scanner IP identified as: {}", scanner_ip);
 
-    // Shared collection for validated proxies
     let validated_proxies = Arc::new(Mutex::new(
         BTreeMap::<String, Vec<ProxyInfo>>::new(),
     ));
 
-    // Spawn concurrent scanning tasks
     let scan_tasks = futures::stream::iter(proxy_candidates.into_iter().map(|candidate| {
         let validated_proxies = Arc::clone(&validated_proxies);
         let scanner_ip = scanner_ip.clone();
@@ -202,7 +185,6 @@ async fn main() -> Result<()> {
 
     scan_tasks.await;
 
-    // Generate output report
     let proxies_by_country = validated_proxies.lock().unwrap_or_else(|e| e.into_inner());
     write_markdown_report(&proxies_by_country, DEFAULT_OUTPUT_FILE)?;
 
@@ -210,7 +192,6 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-/// Load proxy candidates from CSV file
 fn read_proxy_file(file_path: &str) -> io::Result<Vec<ProxyCandidate>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
@@ -244,14 +225,12 @@ fn read_proxy_file(file_path: &str) -> io::Result<Vec<ProxyCandidate>> {
     Ok(candidates)
 }
 
-/// Resolve domain name to IP addresses
 async fn resolve_domain(domain: &str) -> Result<Vec<String>> {
     use tokio::net::lookup_host;
     let addrs = lookup_host(format!("{}:443", domain)).await?;
     Ok(addrs.map(|addr| addr.ip().to_string()).collect())
 }
 
-/// Get scanner's public IP address using Cloudflare
 async fn get_scanner_ip() -> Result<String> {
     let mut cookie_jar = CookieJar::new();
     let _ = make_http_request(
@@ -280,7 +259,6 @@ async fn get_scanner_ip() -> Result<String> {
         .ok_or_else(|| "No clientIp in response".into())
 }
 
-/// Fetch risk assessment data for a proxy IP from risk API
 async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<RiskAssessment> {
     let timeout = Duration::from_secs(TIMEOUT_SECONDS);
     tokio::time::timeout(timeout, async {
@@ -334,7 +312,6 @@ async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<RiskAssessmen
     .map_err(|_| Box::<dyn std::error::Error + Send + Sync>::from("Timeout"))?
 }
 
-/// Scan a single proxy candidate for validity and geolocation
 async fn scan_proxy_candidate(
     candidate: ProxyCandidate,
     validated_proxies: &Arc<Mutex<BTreeMap<String, Vec<ProxyInfo>>>>,
@@ -345,7 +322,6 @@ async fn scan_proxy_candidate(
 
     println!("Action: Scanning candidate {}", candidate.ip);
 
-    // Attempt initial connection
     if make_http_request(
         IP_RESOLVER_HOST,
         CLOUDFLARE_INDEX_ENDPOINT,
@@ -360,7 +336,6 @@ async fn scan_proxy_candidate(
         return;
     }
 
-    // Fetch metadata through proxy
     match make_http_request(
         IP_RESOLVER_HOST,
         CLOUDFLARE_META_ENDPOINT,
@@ -373,7 +348,7 @@ async fn scan_proxy_candidate(
         Ok((_, body)) => {
             if let Ok(json) = parse_json_response(&body) {
                 if let Some(proxy_ip) = json.get("clientIp").and_then(|v| v.as_str()) {
-                    // Verify proxy is actually forwarding traffic
+
                     if proxy_ip != scanner_ip {
                         let isp_name = json
                             .get("asOrganization")
@@ -440,7 +415,6 @@ async fn scan_proxy_candidate(
     }
 }
 
-/// Make HTTP request through optional proxy with TLS
 async fn make_http_request(
     host: &str,
     path: &str,
@@ -464,7 +438,6 @@ async fn make_http_request(
             headers.push(cookie_header);
         }
 
-        // Add metadata-specific headers for fingerprinting
         if is_meta_endpoint {
             headers.push("Referer: https://speed.cloudflare.com/".to_string());
             headers.push("Sec-Fetch-Dest: empty".to_string());
@@ -475,7 +448,6 @@ async fn make_http_request(
 
         let request_payload = format!("GET {} HTTP/1.1\r\n{}\r\n\r\n", path, headers.join("\r\n"));
 
-        // Connect through proxy or directly to target
         let stream = if let Some((proxy_ip, proxy_port)) = proxy {
             TcpStream::connect(format!("{}:{}", proxy_ip, proxy_port)).await?
         } else {
@@ -516,7 +488,6 @@ async fn make_http_request(
     .map_err(|_| Box::<dyn std::error::Error + Send + Sync>::from("Timeout"))?
 }
 
-/// Parse JSON from HTTP response body
 fn parse_json_response(body: &str) -> Result<Value> {
     let trimmed = body.trim();
     if let Ok(val) = serde_json::from_str::<Value>(trimmed) {
@@ -524,7 +495,7 @@ fn parse_json_response(body: &str) -> Result<Value> {
             return Ok(val);
         }
     }
-    // Attempt to extract JSON object if response contains extra data
+
     if let Some(start) = trimmed.find('{') {
         if let Some(end) = trimmed.rfind('}') {
             if end > start {
@@ -539,7 +510,6 @@ fn parse_json_response(body: &str) -> Result<Value> {
     Err("Invalid JSON response".into())
 }
 
-/// Generate markdown report with proxy statistics and listings
 fn write_markdown_report(
     proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>,
     output_file: &str,
@@ -549,7 +519,6 @@ fn write_markdown_report(
     let total_active = proxies_by_country.values().map(|v| v.len()).sum::<usize>();
     let total_countries = proxies_by_country.len();
 
-    // Generate timestamp badges with Tehran timezone
     let now = Utc::now();
     let tehran_now = now.with_timezone(&Tehran);
     let tehran_next = tehran_now + ChronoDuration::days(1);
@@ -581,7 +550,6 @@ fn write_markdown_report(
         total_countries
     );
 
-    // Write header section
     writeln!(
         file,
         r##"<p align="left">
@@ -615,7 +583,6 @@ fn write_markdown_report(
         countries = countries_badge,
     )?;
 
-    // Group proxies by major providers
     let top_providers = ["Google", "Amazon", "Cloudflare", "OVH", "Hetzner"];
     let mut provider_buckets: HashMap<&str, Vec<ProxyInfo>> = HashMap::new();
 
@@ -623,7 +590,6 @@ fn write_markdown_report(
         provider_buckets.insert(prov, Vec::new());
     }
 
-    // Categorize proxies by provider
     for proxies in proxies_by_country.values() {
         for info in proxies.iter() {
             for prov in top_providers.iter() {
@@ -636,7 +602,6 @@ fn write_markdown_report(
         }
     }
 
-    // Write provider-based sections
     for prov in top_providers.iter() {
         if let Some(provider_proxies) = provider_buckets.get(prov) {
             if !provider_proxies.is_empty() {
@@ -670,7 +635,6 @@ fn write_markdown_report(
         }
     }
 
-    // Write country-based sections
     for (country_code, country_proxies) in proxies_by_country.iter() {
         let mut sorted_proxies = country_proxies.clone();
         sorted_proxies.sort_by_key(|info| info.fraud_score);
@@ -709,16 +673,14 @@ fn write_markdown_report(
     Ok(())
 }
 
-/// Get emoji representation for risk level
 fn get_risk_emoji(risk_level: &str) -> &'static str {
     match risk_level.to_lowercase().as_str() {
         "low" => "⚪",
         "medium" => "🟡",
-        _ => "⚫",
+        _ => "🔴",
     }
 }
 
-/// Generate HTML img tag for provider logo
 fn generate_provider_logo_html(provider_name: &str) -> Option<String> {
     let provider_domains = [
         ("Google", "google.com"),
@@ -745,7 +707,6 @@ fn generate_provider_logo_html(provider_name: &str) -> Option<String> {
     None
 }
 
-/// Generate Unicode flag emoji from country code
 fn generate_country_flag_emoji(country_code: &str) -> String {
     country_code
         .chars()
@@ -762,7 +723,6 @@ fn generate_country_flag_emoji(country_code: &str) -> String {
         .collect()
 }
 
-/// Get full country name from ISO 3166-1 alpha-2 code
 fn get_country_name(code: &str) -> String {
     match code.to_uppercase().as_str() {
         "US" => "United States".to_string(),
