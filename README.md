@@ -3,6 +3,10 @@
 
 <br><br/>
 
+
+
+[![Rust Proxy Scanner](https://github.com/nscl5/vless/actions/workflows/RScanner.yml/badge.svg?branch=main&event=workflow_dispatch)](https://github.com/nscl5/vless/actions/workflows/RScanner.yml)
+
 > [!CAUTION]
 >
 > <br/>
