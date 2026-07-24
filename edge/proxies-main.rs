@@ -1,4 +1,4 @@
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use chrono::{Duration as ChronoDuration, Utc};
 use chrono_tz::Asia::Tehran;
 use clap::Parser;
@@ -9,6 +9,7 @@ use serde::Deserialize;
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
+use std::net::{IpAddr, SocketAddr};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -20,6 +21,8 @@ const DEFAULT_TIMEOUT_SECONDS: u64 = 6;
 const REQUEST_DELAY_MS: u64 = 50;
 const TARGET_PORT: u16 = 443;
 const VALIDATION_HOSTS: &[&str] = &["ipv4.090227.xyz", "ipv6.090227.xyz"];
+const PRIVATE_SOURCES_ENV: &str = "PRIVATE_PROXY_DOMAINS";
+const LEGACY_SOURCES_ENV: &str = "RE_NORTHERN_TERRITORY";
 
 #[derive(Parser, Clone)]
 #[command(name = "Proxy Checker")]
@@ -80,15 +83,18 @@ async fn main() -> Result<()> {
         Err(e) => println!("Warning: could not read proxy file: {}", e),
     }
 
-    match std::env::var("RE_NORTHERN_TERRITORY") {
-        Ok(raw_RE) => {
-            let domains: Vec<String> = raw_RE
+    let private_sources = std::env::var(PRIVATE_SOURCES_ENV)
+        .or_else(|_| std::env::var(LEGACY_SOURCES_ENV));
+
+    match private_sources {
+        Ok(raw) => {
+            let domains: Vec<String> = raw
                 .lines()
                 .map(|l| l.trim().to_string())
                 .filter(|l| !l.is_empty())
                 .collect();
 
-            println!("Resolving {} REvil sheets from secret...", domains.len());
+            println!("Resolving {} private proxy domains from secret...", domains.len());
 
             for domain in domains.iter() {
                 match resolve_domain(domain).await {
@@ -103,12 +109,24 @@ async fn main() -> Result<()> {
                 }
             }
         }
-        Err(_) => println!("RE_NORTHERN_TERRITORY not set, skipping REvil-based candidates"),
+        Err(_) => println!("No private proxy domains set, skipping secret-based candidates"),
     }
 
     println!("Total unique candidates (port {} only): {}", TARGET_PORT, candidates.len());
 
-    let self_ip = fetch_self_ip().await.unwrap_or_else(|_| "0.0.0.0".to_string());
+    let self_ip = match fetch_self_ip().await {
+        Ok(ip) => ip,
+        Err(e) => {
+            // If we can't learn our own IP, the self-IP dedupe check becomes
+            // unreliable. Make this loud instead of silently using 0.0.0.0.
+            println!(
+                "{}",
+                format!("WARNING: could not determine self IP ({}). Proxy detection may be unreliable.", e)
+                    .yellow()
+            );
+            "0.0.0.0".to_string()
+        }
+    };
     println!("Your real IP: {}", self_ip);
 
     let active_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<ProxyInfo>>::new()));
@@ -170,12 +188,17 @@ async fn resolve_domain(domain: &str) -> Result<Vec<String>> {
     Ok(ips)
 }
 
-fn format_socket_addr(ip: &str, port: u16) -> String {
-    if ip.contains(':') {
-        format!("[{}]:{}", ip, port)
-    } else {
-        format!("{}:{}", ip, port)
-    }
+/// Builds a reqwest client that always connects to `socket` for the given
+/// `host`, while keeping `host` as the SNI / Host header. This lets us test a
+/// specific proxy IP while letting reqwest handle TLS, chunked encoding,
+/// compression and keep-alive correctly (which is what the old hand-rolled
+/// HTTP parser got wrong).
+fn pinned_client(host: &str, socket: SocketAddr) -> Result<Client> {
+    Ok(Client::builder()
+        .timeout(Duration::from_secs(DEFAULT_TIMEOUT_SECONDS))
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+        .resolve(host, socket)
+        .build()?)
 }
 
 async fn fetch_self_ip() -> Result<String> {
@@ -189,57 +212,34 @@ async fn fetch_self_ip() -> Result<String> {
 }
 
 async fn check_ip_port(ip: &str, port: u16, self_ip: &str) -> Result<(WorkerCf, u128)> {
-    use anyhow::anyhow;
-    use native_tls::TlsConnector;
-    use tokio::io::{AsyncReadExt, AsyncWriteExt};
-    use tokio::net::TcpStream;
-    use tokio_native_tls::TlsConnector as TokioTlsConnector;
+    let ipaddr: IpAddr = ip.parse().with_context(|| format!("invalid IP: {}", ip))?;
+    let socket = SocketAddr::new(ipaddr, port);
 
-    let timeout = Duration::from_secs(DEFAULT_TIMEOUT_SECONDS);
-    let addr = format_socket_addr(ip, port);
+    let client = pinned_client("speed.cloudflare.com", socket)?;
 
     let start_ping = Instant::now();
-    let tcp = tokio::time::timeout(timeout, TcpStream::connect(&addr)).await??;
-
-    let tls = TokioTlsConnector::from(TlsConnector::builder().build()?);
-    let mut stream = tokio::time::timeout(timeout, tls.connect("speed.cloudflare.com", tcp)).await??;
-
+    let resp = client
+        .get("https://speed.cloudflare.com/meta")
+        .send()
+        .await
+        .context("meta request failed")?;
     let ping = start_ping.elapsed().as_millis();
 
-    let req = concat!(
-        "GET /meta HTTP/1.1\r\n",
-        "Host: speed.cloudflare.com\r\n",
-        "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)\r\n",
-        "Accept: */*\r\n",
-        "Accept-Encoding: identity\r\n",
-        "Connection: close\r\n\r\n"
-    );
-
-    stream.write_all(req.as_bytes()).await?;
-
-    let mut buf = Vec::new();
-    let mut tmp = [0u8; 8192];
-    while let Ok(n) = stream.read(&mut tmp).await {
-        if n == 0 {
-            break;
-        }
-        buf.extend_from_slice(&tmp[..n]);
+    let status = resp.status();
+    if !status.is_success() {
+        return Err(anyhow!("meta returned HTTP {}", status));
     }
 
-    let text = String::from_utf8_lossy(&buf);
-    let body = if let Some(pos) = text.find("\r\n\r\n") {
-        &text[pos + 4..]
-    } else {
-        &text
-    };
-    let body = body.trim();
-
-    let v: serde_json::Value = serde_json::from_str(body)?;
+    // reqwest transparently de-chunks and decompresses the body for us.
+    let v: serde_json::Value = resp.json().await.context("meta JSON parse failed")?;
 
     let out_ip = v.get("clientIp").and_then(|v| v.as_str()).unwrap_or("").to_string();
 
-    if out_ip.is_empty() || out_ip == self_ip {
-        return Err(anyhow!("IP match or empty"));
+    if out_ip.is_empty() {
+        return Err(anyhow!("no clientIp field in /meta response"));
+    }
+    if out_ip == self_ip {
+        return Err(anyhow!("clientIp == self IP ({}), not going through a proxy", self_ip));
     }
 
     Ok((
@@ -254,63 +254,31 @@ async fn check_ip_port(ip: &str, port: u16, self_ip: &str) -> Result<(WorkerCf, 
 }
 
 async fn validate_as_proxyip(ip: &str, port: u16) -> Result<u128> {
-    use anyhow::anyhow;
-    use native_tls::TlsConnector;
-    use tokio::io::{AsyncReadExt, AsyncWriteExt};
-    use tokio::net::TcpStream;
-    use tokio_native_tls::TlsConnector as TokioTlsConnector;
-
-    let timeout = Duration::from_secs(DEFAULT_TIMEOUT_SECONDS);
-    let addr = format_socket_addr(ip, port);
+    let ipaddr: IpAddr = ip.parse().with_context(|| format!("invalid IP: {}", ip))?;
+    let socket = SocketAddr::new(ipaddr, port);
     let mut last_error = None;
 
     for &validation_host in VALIDATION_HOSTS.iter() {
+        let client = match pinned_client(validation_host, socket) {
+            Ok(c) => c,
+            Err(e) => {
+                last_error = Some(anyhow!("client build failed: {}", e));
+                continue;
+            }
+        };
+
         let start = Instant::now();
-
-        let tcp = match tokio::time::timeout(timeout, TcpStream::connect(&addr)).await {
-            Ok(Ok(t)) => t,
-            _ => {
-                last_error = Some(anyhow!("TCP connect failed"));
-                continue;
+        match client.get(format!("https://{}/", validation_host)).send().await {
+            Ok(resp) if resp.status().as_u16() == 200 => {
+                return Ok(start.elapsed().as_millis());
             }
-        };
-
-        let tls = TokioTlsConnector::from(TlsConnector::builder().build()?);
-        let mut stream = match tokio::time::timeout(timeout, tls.connect(validation_host, tcp)).await {
-            Ok(Ok(s)) => s,
-            _ => {
-                last_error = Some(anyhow!("TLS handshake failed"));
-                continue;
+            Ok(resp) => {
+                last_error = Some(anyhow!("non-200 response: HTTP {}", resp.status()));
             }
-        };
-
-        let req = format!(
-            "GET / HTTP/1.1\r\nHost: {}\r\nUser-Agent: Mozilla/5.0\r\nConnection: close\r\n\r\n",
-            validation_host
-        );
-
-        if stream.write_all(req.as_bytes()).await.is_err() {
-            last_error = Some(anyhow!("Write failed"));
-            continue;
-        }
-
-        let mut buf = Vec::new();
-        let mut tmp = [0u8; 4096];
-        while let Ok(n) = stream.read(&mut tmp).await {
-            if n == 0 {
-                break;
+            Err(e) => {
+                last_error = Some(anyhow!("request to {} failed: {}", validation_host, e));
             }
-            buf.extend_from_slice(&tmp[..n]);
         }
-
-        let text = String::from_utf8_lossy(&buf);
-        let status_line = text.lines().next().unwrap_or("");
-
-        if status_line.contains(" 200 ") {
-            return Ok(start.elapsed().as_millis());
-        }
-
-        last_error = Some(anyhow!("Non-200 response: {}", status_line));
     }
 
     Err(last_error.unwrap_or_else(|| anyhow!("All validation hosts failed")))
@@ -343,13 +311,19 @@ async fn scan_ip(ip: String, port: u16, active_proxies: &Arc<Mutex<BTreeMap<Stri
             }
             Err(e) => {
                 println!(
-                    "PROXY REJECTED ⚠️: {}:{} (passed /meta but failed validation: {})",
-                    ip, port, e
+                    "{}",
+                    format!(
+                        "PROXY REJECTED ⚠️: {}:{} (passed /meta but failed validation: {})",
+                        ip, port, e
+                    )
+                    .yellow()
                 );
             }
         },
-        Err(_) => {
-            println!("PROXY DEAD ❌: {}", ip);
+        // Surface the real error instead of swallowing it, so a systematic
+        // failure (TLS, timeout, parse, self-IP match) is diagnosable.
+        Err(e) => {
+            println!("{}", format!("PROXY DEAD ❌: {}:{} ({})", ip, port, e).red());
         }
     }
 }
@@ -380,9 +354,19 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, ou
 
     writeln!(
         file,
-        r##"> [!WARNING]
+        r##"<p align="left">
+<img src="https://latex.codecogs.com/svg.image?\huge&space;{{\color{{Golden}}\mathrm{{PR{{\color{{black}}\O}}XY\;IP}}" width=220px" </p><br/>
+
+> [!WARNING]
 >
-> <p><b>Daily Fresh Proxies (Validated)</b></p>
+> <p><b>Daily Fresh Proxies</b></p>
+>
+> A curated list of <b>high-quality</b>, fully-tested proxies sourced from reputable ISPs and major global data centers (e.g., Google, Amazon, Cloudflare, Tencent, Hetzner, and others)
+>
+> <br/>
+>
+> <p><b>Auto-Updated Daily</b></p>
+>
 >
 > <img src="https://img.shields.io/badge/Last_Update-{}-966600" />
 > <img src="https://img.shields.io/badge/Next_Update-{}-966600" />
@@ -391,8 +375,8 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, ou
 >
 > <br><br/>
 "##,
-        last_badge_label, next_badge_label, total_active, total_countries,
-    )?;
+      last_badge_label, next_badge_label, total_active, total_countries,
+  )?;
 
     for (country_code, proxies) in proxies_by_country.iter() {
         let flag = country_flag(country_code);
