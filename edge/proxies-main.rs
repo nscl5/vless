@@ -193,45 +193,28 @@ async fn get_scanner_ip() -> Result<String> {
 }
 
 async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<(i64, String)> {
-    let timeout = Duration::from_secs(TIMEOUT_SECONDS);
-    tokio::time::timeout(timeout, async {
-        let stream = TcpStream::connect(format!("{}:443", api_host)).await?;
-        let native_connector = NativeTlsConnector::builder()
-            .danger_accept_invalid_certs(true)
-            .build()?;
-        let tokio_connector = TokioTlsConnector::from(native_connector);
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(TIMEOUT_SECONDS))
+        .danger_accept_invalid_certs(true)
+        .build()?;
 
-        let mut tls_stream = tokio_connector.connect(api_host, stream).await?;
-        let request = format!(
-            "GET /{} HTTP/1.1\r\nHost: {}\r\nUser-Agent: RustClient/1.0\r\nConnection: close\r\n\r\n",
-            ip, api_host
-        );
-        tls_stream.write_all(request.as_bytes()).await?;
+    let url = format!("https://{}/api/{}", api_host, ip);
 
-        let mut response_bytes = Vec::new();
-        let mut buffer = [0u8; 8192];
+    let resp = client
+        .get(&url)
+        .header("User-Agent", "RustClient/1.0")
+        .send()
+        .await?;
 
-        loop {
-            match tls_stream.read(&mut buffer).await {
-                Ok(0) => break,
-                Ok(n) => response_bytes.extend_from_slice(&buffer[..n]),
-                Err(_) => break,
-            }
-        }
+    let val: Value = resp.json().await?;
 
-        let response_str = String::from_utf8_lossy(&response_bytes).to_string();
-        if let Some(pos) = response_str.find("\r\n\r\n") {
-            let body_part = &response_str[pos + 4..];
-            if let Ok(val) = serde_json::from_str::<Value>(body_part) {
-                let score = val.get("fraud_score").and_then(|v| v.as_i64()).unwrap_or(100);
-                let risk = val.get("risk").and_then(|v| v.as_str()).unwrap_or("high").to_string();
-                return Ok((score, risk));
-            }
-        }
-        Err("Invalid API Response".into())
-    })
-    .await
-    .map_err(|_| Box::<dyn std::error::Error + Send + Sync>::from("Timeout"))?
+    if let Some(info) = val.get("info") {
+        let score = info.get("fraud_score").and_then(|v| v.as_i64()).unwrap_or(100);
+        let risk = info.get("risk").and_then(|v| v.as_str()).unwrap_or("high").to_string();
+        Ok((score, risk))
+    } else {
+        Err("Invalid API JSON Structure".into())
+    }
 }
 
 async fn scan_candidate(
