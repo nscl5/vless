@@ -40,8 +40,8 @@ struct RiskAssessment {
 impl RiskAssessment {
     fn with_defaults() -> Self {
         Self {
-            fraud_score: 100,
-            risk_level: "high".to_string(),
+            fraud_score: 0,
+            risk_level: "low".to_string(),
             assessed_at: Utc::now(),
         }
     }
@@ -629,8 +629,7 @@ fn write_markdown_report(
                         info.ip, info.isp, location, info.fraud_score, risk_emoji
                     )?;
                 }
-                writeln!(file, "\n</details>\n\n---\n")?;
-                writeln!(file, "<br/>")?;
+                writeln!(file, "\n</details>\n\n---\n\n\n")?;
             }
         }
     }
@@ -662,8 +661,7 @@ fn write_markdown_report(
             )?;
         }
 
-        writeln!(file, "\n</details>\n\n---\n")?;
-        writeln!(file, "<br/>")?;
+        writeln!(file, "\n</details>\n\n---\n\n\n")?;
     }
 
     println!(
