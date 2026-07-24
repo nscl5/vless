@@ -18,7 +18,7 @@ const IP_RESOLVER_HOST: &str = "speed.cloudflare.com";
 const CLOUDFLARE_INDEX_ENDPOINT: &str = "/";
 const CLOUDFLARE_META_ENDPOINT: &str = "/meta";
 
-const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.yaml";
+const DEFAULT_PROXY_FILE: &str = "edge/assets/p-list-july.txt";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
 
 const MAX_CONCURRENT_SCANS: usize = 150;
@@ -31,39 +31,14 @@ const RISK_API_HOST_ENV: &str = "RISK_API_HOST";
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 #[derive(Debug, Clone)]
-struct RiskAssessment {
-    fraud_score: i64,
-    risk_level: String,
-    assessed_at: DateTime<Utc>,
-}
-
-impl RiskAssessment {
-    fn with_defaults() -> Self {
-        Self {
-            fraud_score: 0,
-            risk_level: "low".to_string(),
-            assessed_at: Utc::now(),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-struct ProxyCandidate {
-    ip: String,
-    port: u16,
-    isp_source: String,
-}
-
-#[derive(Debug, Clone)]
 struct ProxyInfo {
     ip: String,
-    port: u16,
     isp: String,
     country_code: String,
     city: String,
     region: String,
     fraud_score: i64,
-    risk_level: String,
+    risk: String,
 }
 
 #[derive(Debug, Clone)]
@@ -99,8 +74,7 @@ impl CookieJar {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let api_host = std::env::var(RISK_API_HOST_ENV)
-        .expect("Environment variable RISK_API_HOST is missing");
+    let api_host = std::env::var(RISK_API_HOST_ENV).expect("Environment variable RISK_API_HOST is missing");
 
     if let Some(parent) = Path::new(DEFAULT_OUTPUT_FILE).parent() {
         fs::create_dir_all(parent)?;
@@ -108,19 +82,16 @@ async fn main() -> Result<()> {
     File::create(DEFAULT_OUTPUT_FILE)?;
 
     let mut seen_ips: HashSet<String> = HashSet::new();
-    let mut proxy_candidates: Vec<ProxyCandidate> = Vec::new();
+    let mut proxy_candidates: Vec<(String, u16, String)> = Vec::new();
 
     match read_proxy_file(DEFAULT_PROXY_FILE) {
-        Ok(candidates) => {
-            for candidate in candidates {
-                if candidate.port == TARGET_PROXY_PORT && seen_ips.insert(candidate.ip.clone()) {
-                    proxy_candidates.push(candidate);
+        Ok(list) => {
+            for (ip, port, isp) in list {
+                if port == TARGET_PROXY_PORT && seen_ips.insert(ip.clone()) {
+                    proxy_candidates.push((ip, port, isp));
                 }
             }
-            println!(
-                "System: Loaded {} candidates from file",
-                proxy_candidates.len()
-            );
+            println!("System: Loaded {} proxy_candidates from file", proxy_candidates.len());
         }
         Err(e) => println!("System Warning: Could not read proxy file: {}", e),
     }
@@ -128,74 +99,56 @@ async fn main() -> Result<()> {
     if let Ok(raw_domains) = std::env::var(NORTHERN_TERRITORY_ENV) {
         let domains: Vec<String> = raw_domains
             .lines()
-            .map(|line| line.trim().to_string())
-            .filter(|line| !line.is_empty())
+            .map(|l| l.trim().to_string())
+            .filter(|l| !l.is_empty())
             .collect();
 
-        println!(
-            "System: Resolving {} domains from Northern Territory",
-            domains.len()
-        );
+        println!("System: Resolving {} domains from secrets", domains.len());
         for domain in domains {
-            if let Ok(resolved_ips) = resolve_domain(&domain).await {
-                for ip in resolved_ips {
+            if let Ok(ips) = resolve_domain(&domain).await {
+                for ip in ips {
                     if seen_ips.insert(ip.clone()) {
-                        proxy_candidates.push(ProxyCandidate {
-                            ip,
-                            port: TARGET_PROXY_PORT,
-                            isp_source: format!("Legacy Domain: {}", domain),
-                        });
+                        proxy_candidates.push((ip, TARGET_PROXY_PORT, "Private Domain".to_string()));
                     }
                 }
             }
         }
     }
 
-    println!(
-        "System: Total unique candidates for scanning: {}",
-        proxy_candidates.len()
-    );
+    println!("System: Total unique proxy_candidates for scanning: {}", proxy_candidates.len());
 
     let scanner_ip = match get_scanner_ip().await {
         Ok(ip) => ip,
         Err(_) => "0.0.0.0".to_string(),
     };
-    println!("System: Scanner IP identified as: {}", scanner_ip);
+    println!("System: Origin IP identified as: {}", scanner_ip);
 
-    let validated_proxies = Arc::new(Mutex::new(
-        BTreeMap::<String, Vec<ProxyInfo>>::new(),
-    ));
+    let validated_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<ProxyInfo>>::new()));
 
-    let scan_tasks = futures::stream::iter(proxy_candidates.into_iter().map(|candidate| {
+    let tasks = futures::stream::iter(proxy_candidates.into_iter().map(|(ip, port, isp_source)| {
         let validated_proxies = Arc::clone(&validated_proxies);
         let scanner_ip = scanner_ip.clone();
         let api_host = api_host.clone();
         async move {
-            scan_proxy_candidate(
-                candidate,
-                &validated_proxies,
-                &scanner_ip,
-                &api_host,
-            )
-            .await;
+            scan_candidate(ip, port, isp_source, &validated_proxies, &scanner_ip, &api_host).await;
         }
     }))
     .buffer_unordered(MAX_CONCURRENT_SCANS)
     .collect::<Vec<()>>();
 
-    scan_tasks.await;
+    tasks.await;
 
-    let proxies_by_country = validated_proxies.lock().unwrap_or_else(|e| e.into_inner());
-    write_markdown_report(&proxies_by_country, DEFAULT_OUTPUT_FILE)?;
+    let locked_proxies = validated_proxies.lock().unwrap_or_else(|e| e.into_inner());
+    write_markdown_report(&locked_proxies, DEFAULT_OUTPUT_FILE)?;
 
     println!("System: Workflow completed successfully.");
     Ok(())
 }
 
-fn read_proxy_file(file_path: &str) -> io::Result<Vec<ProxyCandidate>> {
+fn read_proxy_file(file_path: &str) -> io::Result<Vec<(String, u16, String)>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
-    let mut candidates = Vec::new();
+    let mut result = Vec::new();
 
     for line in reader.lines() {
         let line = line?;
@@ -203,26 +156,22 @@ fn read_proxy_file(file_path: &str) -> io::Result<Vec<ProxyCandidate>> {
         if trimmed.is_empty() || trimmed.starts_with('#') {
             continue;
         }
-
         let parts: Vec<&str> = trimmed.split(',').collect();
         let ip = parts[0].trim().to_string();
-        let port: u16 = parts
-            .get(1)
-            .and_then(|p| p.trim().parse().ok())
-            .unwrap_or(443);
-        let isp_source = parts
-            .get(3)
-            .map(|s| s.trim().to_string())
-            .unwrap_or_else(|| "Unknown ISP".to_string());
-
-        candidates.push(ProxyCandidate {
-            ip,
-            port,
-            isp_source,
-        });
+        let port: u16 = if parts.len() > 1 {
+            parts[1].trim().parse().unwrap_or(443)
+        } else {
+            443
+        };
+        let isp = if parts.len() > 3 {
+            parts[3].trim().to_string()
+        } else {
+            "Unknown ISP".to_string()
+        };
+        result.push((ip, port, isp));
     }
 
-    Ok(candidates)
+    Ok(result)
 }
 
 async fn resolve_domain(domain: &str) -> Result<Vec<String>> {
@@ -233,24 +182,8 @@ async fn resolve_domain(domain: &str) -> Result<Vec<String>> {
 
 async fn get_scanner_ip() -> Result<String> {
     let mut cookie_jar = CookieJar::new();
-    let _ = make_http_request(
-        IP_RESOLVER_HOST,
-        CLOUDFLARE_INDEX_ENDPOINT,
-        None,
-        &mut cookie_jar,
-        false,
-    )
-    .await;
-
-    let (_, body) = make_http_request(
-        IP_RESOLVER_HOST,
-        CLOUDFLARE_META_ENDPOINT,
-        None,
-        &mut cookie_jar,
-        true,
-    )
-    .await?;
-
+    let _ = make_http_request(IP_RESOLVER_HOST, CLOUDFLARE_INDEX_ENDPOINT, None, &mut cookie_jar, false).await;
+    let (_, body) = make_http_request(IP_RESOLVER_HOST, CLOUDFLARE_META_ENDPOINT, None, &mut cookie_jar, true).await?;
     let json = parse_json_response(&body)?;
 
     json.get("clientIp")
@@ -259,7 +192,7 @@ async fn get_scanner_ip() -> Result<String> {
         .ok_or_else(|| "No clientIp in response".into())
 }
 
-async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<RiskAssessment> {
+async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<(i64, String)> {
     let timeout = Duration::from_secs(TIMEOUT_SECONDS);
     tokio::time::timeout(timeout, async {
         let stream = TcpStream::connect(format!("{}:443", api_host)).await?;
@@ -290,20 +223,9 @@ async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<RiskAssessmen
         if let Some(pos) = response_str.find("\r\n\r\n") {
             let body_part = &response_str[pos + 4..];
             if let Ok(val) = serde_json::from_str::<Value>(body_part) {
-                let fraud_score = val
-                    .get("fraud_score")
-                    .and_then(|v| v.as_i64())
-                    .unwrap_or(100);
-                let risk_level = val
-                    .get("risk")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("high")
-                    .to_string();
-                return Ok(RiskAssessment {
-                    fraud_score,
-                    risk_level,
-                    assessed_at: Utc::now(),
-                });
+                let score = val.get("fraud_score").and_then(|v| v.as_i64()).unwrap_or(100);
+                let risk = val.get("risk").and_then(|v| v.as_str()).unwrap_or("high").to_string();
+                return Ok((score, risk));
             }
         }
         Err("Invalid API Response".into())
@@ -312,105 +234,58 @@ async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<RiskAssessmen
     .map_err(|_| Box::<dyn std::error::Error + Send + Sync>::from("Timeout"))?
 }
 
-async fn scan_proxy_candidate(
-    candidate: ProxyCandidate,
+async fn scan_candidate(
+    ip: String,
+    port: u16,
+    isp_source: String,
     validated_proxies: &Arc<Mutex<BTreeMap<String, Vec<ProxyInfo>>>>,
     scanner_ip: &str,
     api_host: &str,
 ) {
     let mut cookie_jar = CookieJar::new();
 
-    println!("Action: Scanning candidate {}", candidate.ip);
-
-    if make_http_request(
-        IP_RESOLVER_HOST,
-        CLOUDFLARE_INDEX_ENDPOINT,
-        Some((&candidate.ip, candidate.port)),
-        &mut cookie_jar,
-        false,
-    )
-    .await
-    .is_err()
-    {
-        println!("Result: FAILED {} (Connection Error)", candidate.ip);
+    if make_http_request(IP_RESOLVER_HOST, CLOUDFLARE_INDEX_ENDPOINT, Some((&ip, port)), &mut cookie_jar, false).await.is_err() {
+        println!("Result: FAILED {} (Connection Error)", ip);
         return;
     }
 
-    match make_http_request(
-        IP_RESOLVER_HOST,
-        CLOUDFLARE_META_ENDPOINT,
-        Some((&candidate.ip, candidate.port)),
-        &mut cookie_jar,
-        true,
-    )
-    .await
-    {
+    match make_http_request(IP_RESOLVER_HOST, CLOUDFLARE_META_ENDPOINT, Some((&ip, port)), &mut cookie_jar, true).await {
         Ok((_, body)) => {
             if let Ok(json) = parse_json_response(&body) {
-                if let Some(proxy_ip) = json.get("clientIp").and_then(|v| v.as_str()) {
-
-                    if proxy_ip != scanner_ip {
-                        let isp_name = json
+                if let Some(out_ip) = json.get("clientIp").and_then(|v| v.as_str()) {
+                    if out_ip != scanner_ip {
+                        let isp = json
                             .get("asOrganization")
                             .and_then(|v| v.as_str())
                             .map(String::from)
-                            .unwrap_or(candidate.isp_source.clone());
+                            .unwrap_or(isp_source);
 
-                        println!("Action: Analyzing risk profile for {}", candidate.ip);
-
-                        let risk_assessment = fetch_risk_assessment(&candidate.ip, api_host)
+                        let (fraud_score, risk) = fetch_risk_assessment(&ip, api_host)
                             .await
-                            .unwrap_or_else(|_| RiskAssessment::with_defaults());
+                            .unwrap_or((100, "high".to_string()));
 
-                        let proxy_info = ProxyInfo {
-                            ip: candidate.ip.clone(),
-                            port: candidate.port,
-                            isp: isp_name,
-                            country_code: json
-                                .get("country")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or("XX")
-                                .to_string(),
-                            city: json
-                                .get("city")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or("Unknown")
-                                .to_string(),
-                            region: json
-                                .get("region")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or("Unknown")
-                                .to_string(),
-                            fraud_score: risk_assessment.fraud_score,
-                            risk_level: risk_assessment.risk_level.clone(),
+                        let info = ProxyInfo {
+                            ip: ip.clone(),
+                            isp,
+                            country_code: json.get("country").and_then(|v| v.as_str()).unwrap_or("XX").to_string(),
+                            city: json.get("city").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
+                            region: json.get("region").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
+                            fraud_score,
+                            risk,
                         };
 
-                        println!(
-                            "Result: LIVE {} (Fraud Score: {}, Risk: {})",
-                            candidate.ip, proxy_info.fraud_score, proxy_info.risk_level
-                        );
+                        println!("Result: LIVE {} (Fraud Score: {}, Risk: {})", ip, info.fraud_score, info.risk_level);
 
-                        let mut locked = validated_proxies
-                            .lock()
-                            .unwrap_or_else(|e| e.into_inner());
-                        locked
-                            .entry(proxy_info.country_code.clone())
-                            .or_default()
-                            .push(proxy_info);
+                        let mut locked = validated_proxies.lock().unwrap_or_else(|e| e.into_inner());
+                        locked.entry(info.country_code.clone()).or_default().push(info);
                         return;
                     }
                 }
             }
-            println!(
-                "Result: FAILED {} (Invalid JSON or Origin IP match)",
-                candidate.ip
-            );
+            println!("Result: FAILED {} (Invalid JSON or Origin IP)", ip);
         }
         Err(_) => {
-            println!(
-                "Result: FAILED {} (Meta Request Failed)",
-                candidate.ip
-            );
+            println!("Result: FAILED {} (Meta Request Failed)", ip);
         }
     }
 }
@@ -433,9 +308,9 @@ async fn make_http_request(
         headers.push("Accept-Encoding: identity".to_string());
         headers.push("Connection: close".to_string());
 
-        let cookie_header = cookie_jar.to_header();
-        if !cookie_header.is_empty() {
-            headers.push(cookie_header);
+        let cookie_str = cookie_jar.to_header();
+        if !cookie_str.is_empty() {
+            headers.push(cookie_str);
         }
 
         if is_meta_endpoint {
@@ -495,7 +370,6 @@ fn parse_json_response(body: &str) -> Result<Value> {
             return Ok(val);
         }
     }
-
     if let Some(start) = trimmed.find('{') {
         if let Some(end) = trimmed.rfind('}') {
             if end > start {
@@ -510,10 +384,7 @@ fn parse_json_response(body: &str) -> Result<Value> {
     Err("Invalid JSON response".into())
 }
 
-fn write_markdown_report(
-    proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>,
-    output_file: &str,
-) -> io::Result<()> {
+fn write_markdown_report(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, output_file: &str) -> io::Result<()> {
     let mut file = File::create(output_file)?;
 
     let total_active = proxies_by_country.values().map(|v| v.len()).sum::<usize>();
@@ -537,18 +408,10 @@ fn write_markdown_report(
     let last_badge_label = encode_badge_label(&format!("{} (UTC+3:30)", last_updated_str));
     let next_badge_label = encode_badge_label(&format!("{} (UTC+3:30)", next_update_str));
 
-    let last_badge =
-        format!("<img src=\"https://img.shields.io/badge/Last_Update-{}-966600\" />", last_badge_label);
-    let next_badge =
-        format!("<img src=\"https://img.shields.io/badge/Next_Update-{}-966600\" />", next_badge_label);
-    let active_badge = format!(
-        "<img src=\"https://img.shields.io/badge/Active_Proxies-{}-966600\" />",
-        total_active
-    );
-    let countries_badge = format!(
-        "<img src=\"https://img.shields.io/badge/Countries-{}-966600\" />",
-        total_countries
-    );
+    let last_badge = format!("<img src=\"https://img.shields.io/badge/Last_Update-{}-966600\" />", last_badge_label);
+    let next_badge = format!("<img src=\"https://img.shields.io/badge/Next_Update-{}-966600\" />", next_badge_label);
+    let active_badge = format!("<img src=\"https://img.shields.io/badge/validated_proxies-{}-966600\" />", total_active);
+    let countries_badge = format!("<img src=\"https://img.shields.io/badge/Countries-{}-966600\" />", total_countries);
 
     writeln!(
         file,
@@ -584,8 +447,8 @@ fn write_markdown_report(
     )?;
 
     let top_providers = ["Google", "Amazon", "Cloudflare", "OVH", "Hetzner"];
-    let mut provider_buckets: HashMap<&str, Vec<ProxyInfo>> = HashMap::new();
 
+    let mut provider_buckets: HashMap<&str, Vec<ProxyInfo>> = HashMap::new();
     for prov in top_providers.iter() {
         provider_buckets.insert(prov, Vec::new());
     }
@@ -603,47 +466,51 @@ fn write_markdown_report(
     }
 
     for prov in top_providers.iter() {
-        if let Some(provider_proxies) = provider_buckets.get(prov) {
-            if !provider_proxies.is_empty() {
+        if let Some(list) = provider_buckets.get(prov) {
+            if !list.is_empty() {
                 let provider_logo = generate_provider_logo_html(prov);
                 let provider_title = match provider_logo {
                     Some(ref html) => format!("{} {}", html, prov),
                     None => prov.to_string(),
                 };
-                writeln!(file, "## {} ({})", provider_title, provider_proxies.len())?;
+                writeln!(file, "## {} ({})", provider_title, list.len())?;
                 writeln!(file, "<details>")?;
                 writeln!(file, "<summary>Click to expand</summary>\n")?;
                 writeln!(file, "|   IP   |   ISP    |   Location   |   Risk Score   |")?;
                 writeln!(file, "|:-------|:---------|:------------:|:--------------:|")?;
-
-                let mut sorted_proxies = provider_proxies.clone();
-                sorted_proxies.sort_by_key(|info| info.fraud_score);
-
-                for info in sorted_proxies.iter() {
+                let mut sorted = list.clone();
+                sorted.sort_by_key(|info| info.fraud_score);
+                for info in sorted.iter() {
                     let location = format!("{}, {}", info.region, info.city);
-                    let risk_emoji = get_risk_emoji(&info.risk_level);
+                    let emoji = match info.risk_level.to_lowercase().as_str() {
+                        "low" => "⚪",
+                        "medium" => "🟡",
+                        _ => "🔴",
+                    };
 
                     writeln!(
                         file,
                         "| <pre><code>{}</code></pre> | {} | {} | {} {} |",
-                        info.ip, info.isp, location, info.fraud_score, risk_emoji
+                        info.ip, info.isp, location, info.fraud_score, emoji
                     )?;
                 }
-                writeln!(file, "\n</details>\n\n---\n\n\n")?;
+                writeln!(file, "\n</details>\n\n---\n\n")?;
             }
         }
     }
 
-    for (country_code, country_proxies) in proxies_by_country.iter() {
-        let mut sorted_proxies = country_proxies.clone();
+    for (country_code, proxies) in proxies_by_country.iter() {
+        let mut sorted_proxies = proxies.clone();
         sorted_proxies.sort_by_key(|info| info.fraud_score);
-        let flag_emoji = generate_country_flag_emoji(country_code);
-        let country_name = get_country_name(country_code);
+        let flag = generate_country_flag_emoji(country_code);
+        let name = get_country_name(country_code);
 
         writeln!(
             file,
             "## {} {} ({} proxies)",
-            flag_emoji, country_name, sorted_proxies.len()
+            flag,
+            name,
+            sorted_proxies.len()
         )?;
         writeln!(file, "<details>")?;
         writeln!(file, "<summary>Click to expand</summary>\n")?;
@@ -652,35 +519,28 @@ fn write_markdown_report(
 
         for info in sorted_proxies.iter() {
             let location = format!("{}, {}", info.region, info.city);
-            let risk_emoji = get_risk_emoji(&info.risk_level);
+            let emoji = match info.risk_level.to_lowercase().as_str() {
+                "low" => "⚪",
+                "medium" => "🟡",
+                _ => "🔴",
+            };
 
             writeln!(
                 file,
                 "| <pre><code>{}</code></pre> | {} | {} | {} {} |",
-                info.ip, info.isp, location, info.fraud_score, risk_emoji
+                info.ip, info.isp, location, info.fraud_score, emoji
             )?;
         }
 
-        writeln!(file, "\n</details>\n\n---\n\n\n")?;
+        writeln!(file, "\n</details>\n\n---\n\n")?;
     }
 
-    println!(
-        "System: Markdown report updated successfully at {}",
-        output_file
-    );
+    println!("System: Markdown file updated successfully at {}", output_file);
     Ok(())
 }
 
-fn get_risk_emoji(risk_level: &str) -> &'static str {
-    match risk_level.to_lowercase().as_str() {
-        "low" => "⚪",
-        "medium" => "🟡",
-        _ => "🔴",
-    }
-}
-
-fn generate_provider_logo_html(provider_name: &str) -> Option<String> {
-    let provider_domains = [
+fn generate_provider_logo_html(isp: &str) -> Option<String> {
+    let mapping = [
         ("Google", "google.com"),
         ("Amazon", "amazon.com"),
         ("Cloudflare", "cloudflare.com"),
@@ -691,29 +551,22 @@ fn generate_provider_logo_html(provider_name: &str) -> Option<String> {
         ("Vultr", "vultr.com"),
     ];
 
-    for (keyword, domain) in provider_domains.iter() {
-        if provider_name
-            .to_lowercase()
-            .contains(&keyword.to_lowercase())
-        {
+    for (kw, domain) in mapping.iter() {
+        if isp.to_lowercase().contains(&kw.to_lowercase()) {
             return Some(format!(
                 "<img alt=\"{}\" src=\"https://www.google.com/s2/favicons?sz=22&domain_url={}\" />",
-                provider_name, domain
+                isp, domain
             ));
         }
     }
     None
 }
 
-fn generate_country_flag_emoji(country_code: &str) -> String {
-    country_code
-        .chars()
+fn generate_country_flag_emoji(code: &str) -> String {
+    code.chars()
         .filter_map(|c| {
             if c.is_ascii_alphabetic() {
-                Some(
-                    char::from_u32(0x1F1E6 + (c.to_ascii_uppercase() as u32 - 'A' as u32))
-                        .unwrap(),
-                )
+                Some(char::from_u32(0x1F1E6 + (c.to_ascii_uppercase() as u32 - 'A' as u32)).unwrap())
             } else {
                 None
             }
