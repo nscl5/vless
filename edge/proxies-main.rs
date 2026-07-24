@@ -33,7 +33,6 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>
 #[derive(Debug, Clone)]
 struct ProxyInfo {
     ip: String,
-    port: u16,
     isp: String,
     country_code: String,
     city: String,
@@ -245,9 +244,8 @@ async fn scan_candidate(
 ) {
     let mut cookie_jar = CookieJar::new();
 
-    println!("Action: Connecting to candidate {}", ip);
-
     if make_request(IP_RESOLVER, PATH_HOME, Some((&ip, port)), &mut cookie_jar, false).await.is_err() {
+        println!("Result: FAILED {} (Connection Error)", ip);
         return;
     }
 
@@ -262,14 +260,12 @@ async fn scan_candidate(
                             .map(String::from)
                             .unwrap_or(csv_isp);
 
-                        println!("Action: Analyzing risk profile for {}", ip);
                         let (fraud_score, risk) = fetch_risk_data(&ip, api_host)
                             .await
                             .unwrap_or((100, "high".to_string()));
 
                         let info = ProxyInfo {
                             ip: ip.clone(),
-                            port,
                             isp,
                             country_code: json.get("country").and_then(|v| v.as_str()).unwrap_or("XX").to_string(),
                             city: json.get("city").and_then(|v| v.as_str()).unwrap_or("Unknown").to_string(),
@@ -278,15 +274,19 @@ async fn scan_candidate(
                             risk,
                         };
 
-                        println!("Result: Approved {} with Fraud Score: {} ({})", ip, info.fraud_score, info.risk);
+                        println!("Result: LIVE {} (Fraud Score: {}, Risk: {})", ip, info.fraud_score, info.risk);
 
                         let mut locked = active_proxies.lock().unwrap_or_else(|e| e.into_inner());
                         locked.entry(info.country_code.clone()).or_default().push(info);
+                        return;
                     }
                 }
             }
+            println!("Result: FAILED {} (Invalid JSON or Origin IP)", ip);
         }
-        Err(_) => {}
+        Err(_) => {
+            println!("Result: FAILED {} (Meta Request Failed)", ip);
+        }
     }
 }
 
@@ -422,7 +422,7 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, ou
 >
 > <p><b>Daily Fresh Proxies</b></p>
 >
-> A curated list of <b>high-quality</b>, fully-tested proxies sourced from reputable ISPs and major global data centers (e.g., Google, Amazon, Cloudflare, Tencent, Hetzner, and others)
+> A curated list of <b>high-quality</b>, fully-tested proxies sourced from reputable ISPs and major global data centers (e.g., Google, Amazon, Cloudflare, OVH, Hetzner, and others)
 >
 > <br/>
 >
@@ -446,7 +446,7 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, ou
         countries = countries_badge,
     )?;
 
-    let top_providers = ["Google", "Amazon", "Cloudflare", "Tencent", "Hetzner"];
+    let top_providers = ["Google", "Amazon", "Cloudflare", "OVH", "Hetzner"];
 
     let mut provider_buckets: HashMap<&str, Vec<ProxyInfo>> = HashMap::new();
     for prov in top_providers.iter() {
@@ -495,6 +495,7 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, ou
                     )?;
                 }
                 writeln!(file, "\n</details>\n\n---\n")?;
+                writeln!(file, "<br/>")?;
             }
         }
     }
@@ -533,6 +534,7 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, ou
         }
 
         writeln!(file, "\n</details>\n\n---\n")?;
+        writeln!(file, "<br/>")?;
     }
 
     println!("System: Markdown file updated successfully at {}", output_file);
@@ -546,7 +548,7 @@ fn provider_logo_html(isp: &str) -> Option<String> {
         ("Cloudflare", "cloudflare.com"),
         ("Hetzner", "hetzner.com"),
         ("Hostinger", "hostinger.com"),
-        ("Tencent", "www.tencent.com"),
+        ("OVH", "ovh.com"),
         ("DigitalOcean", "digitalocean.com"),
         ("Vultr", "vultr.com"),
     ];
