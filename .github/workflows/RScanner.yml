@@ -33,6 +33,7 @@ jobs:
     - name: Run Scanner
       env:
         SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
+        RE_NORTHERN_TERRITORY: ${{ secrets.RE_NORTHERN_TERRITORY }}
       run: ./target/release/RScanner
 
     - name: Commit and Push if Changed
