@@ -3,7 +3,7 @@ name: Rust Proxy Scanner
 on:
   workflow_dispatch: 
   schedule:
-    - cron: '0 */24 * * *' 
+    - cron: '0 */23 * * *' 
 
 jobs:
   update-proxies:
@@ -31,6 +31,8 @@ jobs:
       run: chmod +x ./target/release/RScanner
 
     - name: Run Scanner
+      env:
+        SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
       run: ./target/release/RScanner
 
     - name: Commit and Push if Changed
