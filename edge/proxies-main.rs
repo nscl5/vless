@@ -4,11 +4,9 @@ use chrono_tz::Asia::Tehran;
 use clap::Parser;
 use colored::*;
 use futures::StreamExt;
-use ipnetwork::Ipv4Network;
-use rand::seq::SliceRandom;
 use reqwest::Client;
 use serde::Deserialize;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{self, Write};
 use std::path::Path;
@@ -19,39 +17,15 @@ const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
 const DEFAULT_MAX_CONCURRENT: usize = 80;
 const DEFAULT_TIMEOUT_SECONDS: u64 = 6;
 const REQUEST_DELAY_MS: u64 = 20;
-const MAX_IPS_PER_SMALL_PREFIX: usize = 256;
-const MAX_IPS_PER_LARGE_PREFIX: usize = 400;
-const LARGE_PREFIX_THRESHOLD: u8 = 20;
 const TEST_PORTS: &[u16] = &[443, 2096];
 
-const ASN_LIST: &[(&str, u32)] = &[
-    ("Hetzner", 24940),
-    ("OVH", 16276),
-    ("DigitalOcean", 14061),
-    ("Vultr", 20473),
-    ("Google Cloud", 396982),
-    ("Google", 15169),
-    ("AWS", 16509),
-    ("AWS", 14618),
-    ("Microsoft", 8075),
-    ("Tencent", 132203),
-    ("Tencent", 45090),
-    ("Alibaba", 45102),
-    ("Alibaba", 37963),
-    ("Akamai/Linode", 63949),
-    ("UpCloud", 202053),
-    ("Contabo", 51167),
-    ("Hostinger", 47583),
-    ("Scaleway", 12876),
-    ("Leaseweb", 60781),
-    ("Leaseweb", 16265),
-    ("G-Core Labs", 199524),
-    ("Oracle Cloud", 31898),
-    ("netcup", 197540),
+const SHODAN_QUERIES: &[&str] = &[
+    "port:80 product:\"CloudFlare\" title:\"Direct IP access not allowed\"",
+    "port:443 product:\"CloudFlare\" title:\"Direct IP access not allowed\"",
 ];
 
 #[derive(Parser, Clone)]
-#[command(name = "ASN Proxy Scanner")]
+#[command(name = "Shodan Proxy Scanner")]
 struct Args {
     #[arg(short, long, default_value = DEFAULT_OUTPUT_FILE)]
     output_file: String,
@@ -64,33 +38,13 @@ struct Args {
 }
 
 #[derive(Debug, Deserialize)]
-struct BgpViewResponse {
-    data: BgpViewData,
+struct ShodanResponse {
+    matches: Vec<ShodanMatch>,
 }
 
 #[derive(Debug, Deserialize)]
-struct BgpViewData {
-    ipv4_prefixes: Vec<BgpPrefix>,
-}
-
-#[derive(Debug, Deserialize)]
-struct BgpPrefix {
-    prefix: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct RipeStatResponse {
-    data: RipeStatData,
-}
-
-#[derive(Debug, Deserialize)]
-struct RipeStatData {
-    prefixes: Vec<RipePrefix>,
-}
-
-#[derive(Debug, Deserialize)]
-struct RipePrefix {
-    prefix: String,
+struct ShodanMatch {
+    ip_str: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -116,6 +70,9 @@ struct ProxyInfo {
 async fn main() -> Result<()> {
     let args = Args::parse();
 
+    let api_key = std::env::var("SHODAN_API_KEY")
+        .context("SHODAN_API_KEY environment variable not set")?;
+
     if let Some(parent) = Path::new(&args.output_file).parent() {
         std::fs::create_dir_all(parent).context("Failed to create output directory")?;
     }
@@ -126,19 +83,28 @@ async fn main() -> Result<()> {
         .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
         .build()?;
 
-    let mut asn_prefixes: Vec<(String, u32, Vec<String>)> = Vec::new();
+    let mut seen_ips: HashSet<String> = HashSet::new();
+    let mut candidate_ips: Vec<String> = Vec::new();
 
-    for (name, asn) in ASN_LIST.iter() {
-        println!("Fetching prefixes for {} (AS{})", name, asn);
-        let prefixes = fetch_asn_prefixes(&client, *asn).await.unwrap_or_default();
-        println!("  -> {} prefixes found", prefixes.len());
-        asn_prefixes.push((name.to_string(), *asn, prefixes));
-        tokio::time::sleep(Duration::from_millis(600)).await;
+    for query in SHODAN_QUERIES.iter() {
+        println!("Querying Shodan: {}", query);
+        match fetch_shodan_ips(&client, &api_key, query).await {
+            Ok(ips) => {
+                println!("  -> {} IPs found", ips.len());
+                for ip in ips {
+                    if seen_ips.insert(ip.clone()) {
+                        candidate_ips.push(ip);
+                    }
+                }
+            }
+            Err(e) => {
+                println!("  -> query failed: {}", e);
+            }
+        }
+        tokio::time::sleep(Duration::from_millis(1200)).await;
     }
-    
-    let mut candidate_ips = build_candidate_ips(&asn_prefixes);
-    candidate_ips.shuffle(&mut rand::thread_rng());
-    println!("Total candidate IPs to scan: {}", candidate_ips.len());
+
+    println!("Total unique candidate IPs to scan: {}", candidate_ips.len());
 
     let self_ip = fetch_self_ip(&client).await.unwrap_or_else(|_| "0.0.0.0".to_string());
     println!("Your real IP: {}", self_ip);
@@ -165,89 +131,23 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn fetch_asn_prefixes(client: &Client, asn: u32) -> Result<Vec<String>> {
-    let bgpview_url = format!("https://api.bgpview.io/asn/{}/prefixes", asn);
-    if let Ok(resp) = client.get(&bgpview_url).send().await {
-        if let Ok(parsed) = resp.json::<BgpViewResponse>().await {
-            if !parsed.data.ipv4_prefixes.is_empty() {
-                return Ok(parsed.data.ipv4_prefixes.into_iter().map(|p| p.prefix).collect());
-            }
-        }
-    }
-
-    let ripe_url = format!(
-        "https://stat.ripe.net/data/announced-prefixes/data.json?resource=AS{}",
-        asn
+async fn fetch_shodan_ips(client: &Client, api_key: &str, query: &str) -> Result<Vec<String>> {
+    let url = format!(
+        "https://api.shodan.io/shodan/host/search?key={}&query={}",
+        api_key,
+        urlencoding::encode(query)
     );
-    let resp = client.get(&ripe_url).send().await?;
-    let parsed = resp.json::<RipeStatResponse>().await?;
-    Ok(parsed
-        .data
-        .prefixes
-        .into_iter()
-        .map(|p| p.prefix)
-        .filter(|p| p.contains('.'))
-        .collect())
-}
 
-fn sample_ips_from_cidr(cidr: &str) -> Option<Vec<String>> {
-    let network: Ipv4Network = cidr.parse().ok()?;
-    let prefix_len = network.prefix();
+    let resp = client.get(&url).send().await?;
+    let status = resp.status();
 
-    let max_sample = if prefix_len >= LARGE_PREFIX_THRESHOLD {
-        MAX_IPS_PER_SMALL_PREFIX
-    } else {
-        MAX_IPS_PER_LARGE_PREFIX
-    };
-
-    let mut ips: Vec<String> = network.iter().map(|ip| ip.to_string()).collect();
-
-    if ips.len() > max_sample {
-        ips.shuffle(&mut rand::thread_rng());
-        ips.truncate(max_sample);
+    if !status.is_success() {
+        let body = resp.text().await.unwrap_or_default();
+        anyhow::bail!("Shodan returned {}: {}", status, body);
     }
 
-    Some(ips)
-}
-
-const TOTAL_IP_BUDGET: usize = 3000;
-
-fn build_candidate_ips(asn_prefixes: &[(String, u32, Vec<String>)]) -> Vec<String> {
-    let mut result = Vec::new();
-    let active_asns: Vec<_> = asn_prefixes.iter().filter(|(_, _, p)| !p.is_empty()).collect();
-    if active_asns.is_empty() {
-        return result;
-    }
-
-    let per_asn_budget = TOTAL_IP_BUDGET / active_asns.len();
-
-    for (_name, _asn, prefixes) in active_asns.iter() {
-        let mut sorted_prefixes: Vec<Ipv4Network> = prefixes
-            .iter()
-            .filter_map(|p| p.parse().ok())
-            .collect();
-
-        sorted_prefixes.sort_by_key(|n| std::cmp::Reverse(n.prefix()));
-        sorted_prefixes.shuffle(&mut rand::thread_rng());
-
-        let mut collected = 0;
-        for network in sorted_prefixes.iter() {
-            if collected >= per_asn_budget {
-                break;
-            }
-            let remaining = per_asn_budget - collected;
-            let take = remaining.min(network.size() as usize).min(50);
-
-            let mut ips: Vec<String> = network.iter().map(|ip| ip.to_string()).collect();
-            ips.shuffle(&mut rand::thread_rng());
-            ips.truncate(take);
-
-            collected += ips.len();
-            result.extend(ips);
-        }
-    }
-
-    result
+    let parsed = resp.json::<ShodanResponse>().await?;
+    Ok(parsed.matches.into_iter().map(|m| m.ip_str).collect())
 }
 
 async fn fetch_self_ip(client: &Client) -> Result<String> {
@@ -375,7 +275,7 @@ fn write_markdown_file(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, ou
         file,
         r##"> [!WARNING]
 >
-> <p><b>ASN-Scanned Fresh Proxies</b></p>
+> <p><b>Shodan-Discovered Fresh Proxies</b></p>
 >
 > <img src="https://img.shields.io/badge/Last_Update-{}-966600" />
 > <img src="https://img.shields.io/badge/Next_Update-{}-966600" />
