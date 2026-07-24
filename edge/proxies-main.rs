@@ -1,4 +1,6 @@
 use std::collections::{BTreeMap, HashMap, HashSet};
+use colored::*;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::fs::{self, File};
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::Path;
@@ -18,7 +20,7 @@ const IP_RESOLVER_HOST: &str = "speed.cloudflare.com";
 const CLOUDFLARE_INDEX_ENDPOINT: &str = "/";
 const CLOUDFLARE_META_ENDPOINT: &str = "/meta";
 
-const DEFAULT_PROXY_FILE: &str = "edge/assets/p-list-july.txt";
+const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.yaml";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
 
 const MAX_CONCURRENT_SCANS: usize = 150;
@@ -103,7 +105,7 @@ async fn main() -> Result<()> {
             .filter(|l| !l.is_empty())
             .collect();
 
-        println!("System: Resolving {} domains from secrets", domains.len());
+        println!("System: Resolving {} domains from Northern Territory", domains.len());
         for domain in domains {
             if let Ok(ips) = resolve_domain(&domain).await {
                 for ip in ips {
@@ -121,16 +123,27 @@ async fn main() -> Result<()> {
         Ok(ip) => ip,
         Err(_) => "0.0.0.0".to_string(),
     };
-    println!("System: Origin IP identified as: {}", scanner_ip);
+    println!("System: Origin IP identified as: {}\n", scanner_ip);
 
     let validated_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<ProxyInfo>>::new()));
+
+    let total_candidates = proxy_candidates.len();
+    let live_count = Arc::new(AtomicUsize::new(0));
+    let failed_count = Arc::new(AtomicUsize::new(0));
+
+    println!("::group::🐾 Live Scanning Details (Click to Expand)");
 
     let tasks = futures::stream::iter(proxy_candidates.into_iter().map(|(ip, port, isp_source)| {
         let validated_proxies = Arc::clone(&validated_proxies);
         let scanner_ip = scanner_ip.clone();
         let api_host = api_host.clone();
+        let live_count = Arc::clone(&live_count);
+        let failed_count = Arc::clone(&failed_count);
         async move {
-            scan_candidate(ip, port, isp_source, &validated_proxies, &scanner_ip, &api_host).await;
+            scan_candidate(
+                ip, port, isp_source, &validated_proxies, &scanner_ip, &api_host,
+                &live_count, &failed_count
+            ).await;
         }
     }))
     .buffer_unordered(MAX_CONCURRENT_SCANS)
@@ -138,8 +151,36 @@ async fn main() -> Result<()> {
 
     tasks.await;
 
+    println!("::endgroup::");
+
     let locked_proxies = validated_proxies.lock().unwrap_or_else(|e| e.into_inner());
     write_markdown_report(&locked_proxies, DEFAULT_OUTPUT_FILE)?;
+
+    let total_live = live_count.load(Ordering::Relaxed);
+    let total_failed = failed_count.load(Ordering::Relaxed);
+
+    println!("\n{}", "==================================================".cyan().bold());
+    println!("{}", "       🌌 PROXY SCANNER EXECUTION SUMMARY        ".cyan().bold());
+    println!("{}\n", "==================================================".cyan().bold());
+    println!("  🧶 Total Candidates Tested : {}", total_candidates.to_string().bold());
+    println!("  🟢 Live Proxies Found      : {}", total_live.to_string().green().bold());
+    println!("  🔴 Failed / Timeout        : {}", total_failed.to_string().red());
+    println!("  🌐 Active Countries        : {}", locked_proxies.len().to_string().yellow().bold());
+    println!("\n{}", "--------------------------------------------------".dimmed());
+    println!("{}", "🪩 Active Proxies per Country:".bold());
+    
+    for (country_code, proxies) in locked_proxies.iter() {
+        let flag = generate_country_flag_emoji(country_code);
+        let country_name = get_country_name(country_code);
+        println!(
+            "   {} {:<20} ({}) : {} proxies",
+            flag,
+            country_name.cyan(),
+            country_code.bold(),
+            proxies.len().to_string().green().bold()
+        );
+    }
+    println!("{}\n", "==================================================".cyan().bold());
 
     println!("System: Workflow completed successfully.");
     Ok(())
@@ -224,11 +265,14 @@ async fn scan_candidate(
     validated_proxies: &Arc<Mutex<BTreeMap<String, Vec<ProxyInfo>>>>,
     scanner_ip: &str,
     api_host: &str,
+    live_count: &Arc<AtomicUsize>,
+    failed_count: &Arc<AtomicUsize>,
 ) {
     let mut cookie_jar = CookieJar::new();
 
     if make_http_request(IP_RESOLVER_HOST, CLOUDFLARE_INDEX_ENDPOINT, Some((&ip, port)), &mut cookie_jar, false).await.is_err() {
-        println!("Result: FAILED {} (Connection Error)", ip);
+        failed_count.fetch_add(1, Ordering::Relaxed);
+        println!("  ❌ {:<7} | {:<15} | Error: {}", "FAILED".red().bold(), ip, "Connection Error".dimmed());
         return;
     }
 
@@ -257,7 +301,25 @@ async fn scan_candidate(
                             risk,
                         };
 
-                        println!("Result: LIVE {} (Fraud Score: {}, Risk: {})", ip, info.fraud_score, info.risk);
+                        live_count.fetch_add(1, Ordering::Relaxed);
+
+                        let risk_badge = match info.risk.to_lowercase().as_str() {
+                            "low" => "⚪ LOW".green(),
+                            "medium" => "🟡 MEDIUM".yellow(),
+                            _ => "🔴 HIGH".red().bold(),
+                        };
+
+                        let flag = generate_country_flag_emoji(&info.country_code);
+
+                        println!(
+                            "  ✅ {:<7} | {:<15} | Risk: {:<17} | Score: {:<3} | Loc: {} {}",
+                            "LIVE".green().bold(),
+                            ip.bold(),
+                            risk_badge,
+                            info.fraud_score,
+                            flag,
+                            info.country_code.cyan()
+                        );
 
                         let mut locked = validated_proxies.lock().unwrap_or_else(|e| e.into_inner());
                         locked.entry(info.country_code.clone()).or_default().push(info);
@@ -265,10 +327,12 @@ async fn scan_candidate(
                     }
                 }
             }
-            println!("Result: FAILED {} (Invalid JSON or Origin IP)", ip);
+            failed_count.fetch_add(1, Ordering::Relaxed);
+            println!("  ❌ {:<7} | {:<15} | Error: {}", "FAILED".red().bold(), ip, "Invalid JSON/Origin".dimmed());
         }
         Err(_) => {
-            println!("Result: FAILED {} (Meta Request Failed)", ip);
+            failed_count.fetch_add(1, Ordering::Relaxed);
+            println!("  ❌ {:<7} | {:<15} | Error: {}", "FAILED".red().bold(), ip, "Meta Request Failed".dimmed());
         }
     }
 }
