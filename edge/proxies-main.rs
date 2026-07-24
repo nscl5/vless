@@ -110,7 +110,7 @@ async fn main() -> Result<()> {
     let mut seen_ips: HashSet<String> = HashSet::new();
     let mut proxy_candidates: Vec<ProxyCandidate> = Vec::new();
 
-    match read_proxy_file(NORTHERN_TERRITORY) {
+    match read_proxy_file(DEFAULT_PROXY_FILE) {
         Ok(candidates) => {
             for candidate in candidates {
                 if candidate.port == TARGET_PROXY_PORT && seen_ips.insert(candidate.ip.clone()) {
