@@ -5,7 +5,7 @@ use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use chrono::{DateTime, Duration as ChronoDuration, Utc};
+use chrono::{Duration as ChronoDuration, Utc};
 use chrono_tz::Asia::Tehran;
 use futures::StreamExt;
 use native_tls::TlsConnector as NativeTlsConnector;
@@ -274,7 +274,7 @@ async fn scan_candidate(
                             risk,
                         };
 
-                        println!("Result: LIVE {} (Fraud Score: {}, Risk: {})", ip, info.fraud_score, info.risk_level);
+                        println!("Result: LIVE {} (Fraud Score: {}, Risk: {})", ip, info.fraud_score, info.risk);
 
                         let mut locked = validated_proxies.lock().unwrap_or_else(|e| e.into_inner());
                         locked.entry(info.country_code.clone()).or_default().push(info);
@@ -482,7 +482,7 @@ fn write_markdown_report(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, 
                 sorted.sort_by_key(|info| info.fraud_score);
                 for info in sorted.iter() {
                     let location = format!("{}, {}", info.region, info.city);
-                    let emoji = match info.risk_level.to_lowercase().as_str() {
+                    let emoji = match info.risk.to_lowercase().as_str() {
                         "low" => "⚪",
                         "medium" => "🟡",
                         _ => "🔴",
@@ -519,7 +519,7 @@ fn write_markdown_report(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, 
 
         for info in sorted_proxies.iter() {
             let location = format!("{}, {}", info.region, info.city);
-            let emoji = match info.risk_level.to_lowercase().as_str() {
+            let emoji = match info.risk.to_lowercase().as_str() {
                 "low" => "⚪",
                 "medium" => "🟡",
                 _ => "🔴",
