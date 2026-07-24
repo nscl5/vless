@@ -16,6 +16,7 @@ chrono-tz = "0.8"
 serde_json = "1.0"
 native-tls = "0.2"
 ipnetwork = "0.20"
+urlencoding = "2.1"
 tokio-native-tls = "0.3"
 tokio = { version = "1.0", features = ["full"] }
 clap = { version = "4.0", features = ["derive"] }
