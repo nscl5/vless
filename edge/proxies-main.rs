@@ -20,8 +20,9 @@ const IP_RESOLVER_HOST: &str = "speed.cloudflare.com";
 const CLOUDFLARE_INDEX_ENDPOINT: &str = "/";
 const CLOUDFLARE_META_ENDPOINT: &str = "/meta";
 
-const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.yaml";
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
+const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.yaml";
+const SECONDARY_PROXY_FILE: &str = "sub/country_proxies/02_proxies.csv";
 
 const MAX_CONCURRENT_SCANS: usize = 150;
 const TIMEOUT_SECONDS: u64 = 8;
@@ -85,6 +86,20 @@ async fn main() -> Result<()> {
 
     let mut seen_ips: HashSet<String> = HashSet::new();
     let mut proxy_candidates: Vec<(String, u16, String)> = Vec::new();
+    
+    match read_csv_proxy_file(SECONDARY_PROXY_FILE) {
+      Ok(list) => {
+          let mut added = 0;
+          for (ip, port, isp) in list {
+              if seen_ips.insert(ip.clone()) {
+                  proxy_candidates.push((ip, port, isp));
+                  added += 1;
+              }
+          }
+          println!("Picked up {} candidates from the csv file", added);
+      }
+      Err(e) => println!("⚠️  Heads up — couldn't read the csv file: {}", e),
+    }
 
     match read_proxy_file(DEFAULT_PROXY_FILE) {
         Ok(list) => {
@@ -93,7 +108,7 @@ async fn main() -> Result<()> {
                     proxy_candidates.push((ip, port, isp));
                 }
             }
-            println!("📋 Picked up {} candidates from the proxy list", proxy_candidates.len());
+            println!("Picked up {} candidates from the proxy list", proxy_candidates.len());
         }
         Err(e) => println!("⚠️  Heads up — couldn't read the proxy file: {}", e),
     }
@@ -123,7 +138,7 @@ async fn main() -> Result<()> {
         Ok(ip) => ip,
         Err(_) => "0.0.0.0".to_string(),
     };
-    println!("📍 Our own exit IP looks like: {}\n", scanner_ip);
+    println!("✋🏿 Our own exit IP looks like: {}\n", scanner_ip);
 
     let validated_proxies = Arc::new(Mutex::new(BTreeMap::<String, Vec<ProxyInfo>>::new()));
 
@@ -131,7 +146,7 @@ async fn main() -> Result<()> {
     let live_count = Arc::new(AtomicUsize::new(0));
     let failed_count = Arc::new(AtomicUsize::new(0));
 
-    println!("::group::🐾 Live Scan — tap to peek");
+    println!("::group::🐾 Live Scan - tap to peek");
 
     let tasks = futures::stream::iter(proxy_candidates.into_iter().map(|(ip, port, isp_source)| {
         let validated_proxies = Arc::clone(&validated_proxies);
@@ -159,15 +174,15 @@ async fn main() -> Result<()> {
     let total_live = live_count.load(Ordering::Relaxed);
     let total_failed = failed_count.load(Ordering::Relaxed);
 
-    println!("\n{}", "==================================================".cyan().bold());
-    println!("{}", "         🌌  SCAN WRAPPED — HERE'S THE LOWDOWN       ".cyan().bold());
-    println!("{}\n", "==================================================".cyan().bold());
+    println!("\n{}", "==============================================".cyan().bold());
+    println!("{}", "       🌌  SCAN WRAPPED - HERE'S THE LOWDOWN       ".cyan().bold());
+    println!("{}\n", "==============================================".cyan().bold());
     println!("  🧶 Candidates tested  : {}", total_candidates.to_string().bold());
     println!("  🟢 Alive & kicking    : {}", total_live.to_string().green().bold());
     println!("  🔴 Dead / timed out   : {}", total_failed.to_string().red());
     println!("  🌐 Countries covered  : {}", locked_proxies.len().to_string().yellow().bold());
-    println!("\n{}", "--------------------------------------------------".dimmed());
-    println!("{}", "🪩  Active proxies per country:".bold());
+    println!("\n{}", "----------------------------------------------".dimmed());
+    println!("{}", "  🪩 Active proxies per country:".bold());
     
     for (country_code, proxies) in locked_proxies.iter() {
         let flag = generate_country_flag_emoji(country_code);
@@ -180,10 +195,36 @@ async fn main() -> Result<()> {
             proxies.len().to_string().green().bold()
         );
     }
-    println!("{}\n", "==================================================".cyan().bold());
+    println!("{}\n", "==============================================".cyan().bold());
 
-    println!("🎉 All done — everything wrapped up nicely.");
+    println!("🥸 All done, Everything wrapped up nicely.");
     Ok(())
+}
+
+fn read_csv_proxy_file(file_path: &str) -> io::Result<Vec<(String, u16, String)>> {
+    let file = File::open(file_path)?;
+    let reader = BufReader::new(file);
+    let mut result = Vec::new();
+
+    for (i, line) in reader.lines().enumerate() {
+        let line = line?;
+        if i == 0 {
+            continue;
+        }
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let parts: Vec<&str> = trimmed.split(',').collect();
+        if parts.len() < 2 {
+            continue;
+        }
+        let ip = parts[0].trim().to_string();
+        let port: u16 = parts[1].trim().parse().unwrap_or(443);
+        result.push((ip, port, "Unknown ISP".to_string()));
+    }
+
+    Ok(result)
 }
 
 fn read_proxy_file(file_path: &str) -> io::Result<Vec<(String, u16, String)>> {
@@ -582,7 +623,7 @@ fn write_markdown_report(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, 
         writeln!(file, "\n</details>\n\n---\n\n")?;
     }
 
-    println!("📝 Markdown report refreshed at {}", output_file);
+    println!("💠 Markdown report refreshed at {}", output_file);
     Ok(())
 }
 
@@ -601,7 +642,7 @@ fn generate_provider_logo_html(isp: &str) -> Option<String> {
     for (kw, domain) in mapping.iter() {
         if isp.to_lowercase().contains(&kw.to_lowercase()) {
             return Some(format!(
-                "<img alt=\"{}\" src=\"https://www.google.com/s2/favicons?sz=22&domain_url={}\" />",
+                "<img alt=\"{}\" src=\"https://www.google.com/s2/favicons?sz=24&domain_url={}\" />",
                 isp, domain
             ));
         }
