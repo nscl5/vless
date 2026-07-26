@@ -21,7 +21,7 @@ const CLOUDFLARE_INDEX_ENDPOINT: &str = "/";
 const CLOUDFLARE_META_ENDPOINT: &str = "/meta";
 
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
-const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.yaml";
+const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.csv";
 const SECONDARY_PROXY_FILE: &str = "sub/country_proxies/02_proxies.csv";
 
 const MAX_CONCURRENT_SCANS: usize = 150;
