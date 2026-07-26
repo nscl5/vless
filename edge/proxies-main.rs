@@ -299,6 +299,21 @@ async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<(i64, String)
     }
 }
 
+fn risk_color_hex(score: i64) -> String {
+    let clamped = score.clamp(0, 100) as f32 / 100.0;
+    let low = (0xC9, 0xA2, 0x27);
+    let high = (0x8B, 0x1E, 0x1E);
+    let r = (low.0 as f32 + (high.0 as f32 - low.0 as f32) * clamped) as u8;
+    let g = (low.1 as f32 + (high.1 as f32 - low.1 as f32) * clamped) as u8;
+    let b = (low.2 as f32 + (high.2 as f32 - low.2 as f32) * clamped) as u8;
+    format!("{:02X}{:02X}{:02X}", r, g, b)
+}
+
+fn risk_badge_html(score: i64) -> String {
+    let color = risk_color_hex(score);
+    format!("<img src=\"https://img.shields.io/badge/-{}-{}\" />", score, color)
+}
+
 async fn scan_candidate(
     ip: String,
     port: u16,
@@ -344,11 +359,17 @@ async fn scan_candidate(
 
                         live_count.fetch_add(1, Ordering::Relaxed);
 
-                        let risk_badge = match info.risk.to_lowercase().as_str() {
-                            "low" => "⚪ LOW".green(),
-                            "medium" => "🟡 MEDIUM".yellow(),
-                            _ => "🔴 HIGH".red().bold(),
+                        let (r, g, b) = {
+                            let clamped = info.fraud_score.clamp(0, 100) as f32 / 100.0;
+                            let low = (0xC9, 0xA2, 0x27);
+                            let high = (0x8B, 0x1E, 0x1E);
+                            (
+                                (low.0 as f32 + (high.0 as f32 - low.0 as f32) * clamped) as u8,
+                                (low.1 as f32 + (high.1 as f32 - low.1 as f32) * clamped) as u8,
+                                (low.2 as f32 + (high.2 as f32 - low.2 as f32) * clamped) as u8,
+                            )
                         };
+                        let risk_badge = format!("{}", info.fraud_score).truecolor(r, g, b).bold();
 
                         let flag = generate_country_flag_emoji(&info.country_code);
 
@@ -570,18 +591,15 @@ fn write_markdown_report(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, 
                 sorted.sort_by_key(|info| info.fraud_score);
                 for info in sorted.iter() {
                     let location = format!("{}, {}", info.region, info.city);
-                    let emoji = match info.risk.to_lowercase().as_str() {
-                        "low" => "⚪",
-                        "medium" => "🟡",
-                        _ => "🔴",
-                    };
+                    let badge = risk_badge_html(info.fraud_score);
 
                     writeln!(
                         file,
-                        "| <pre><code>{}</code></pre> | {} | {} | {} {} |",
-                        info.ip, info.isp, location, info.fraud_score, emoji
+                        "| <pre><code>{}</code></pre> | {} | {} | {} |",
+                        info.ip, info.isp, location, badge
                     )?;
                 }
+
                 writeln!(file, "\n</details>\n\n---\n\n")?;
             }
         }
@@ -607,16 +625,12 @@ fn write_markdown_report(proxies_by_country: &BTreeMap<String, Vec<ProxyInfo>>, 
 
         for info in sorted_proxies.iter() {
             let location = format!("{}, {}", info.region, info.city);
-            let emoji = match info.risk.to_lowercase().as_str() {
-                "low" => "⚪",
-                "medium" => "🟡",
-                _ => "🔴",
-            };
+            let badge = risk_badge_html(info.fraud_score);
 
             writeln!(
                 file,
-                "| <pre><code>{}</code></pre> | {} | {} | {} {} |",
-                info.ip, info.isp, location, info.fraud_score, emoji
+                "| <pre><code>{}</code></pre> | {} | {} | {} |",
+                info.ip, info.isp, location, badge
             )?;
         }
 
