@@ -1,754 +1,769 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VLESS Proxy Configuration</title>
-  <link rel="icon" href="https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/raven.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --color-canvas-default: #0d1117;
-      --color-canvas-subtle: #161b22;
-      --color-canvas-inset: #010409;
-      --color-border-default: #30363d;
-      --color-border-muted: #21262d;
-      --color-fg-default: #c9d1d9;
-      --color-fg-muted: #8b949e;
-      --color-fg-subtle: #6e7681;
-      --color-accent-fg: #58a6ff;
-      --color-success-fg: #3fb950;
-      --color-warning-fg: #d29922;
-      --color-danger-fg: #f85149;
-    }
-
-    html, body {
-      background-color: var(--color-canvas-default);
-      color: var(--color-fg-default);
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-      font-size: 14px;
-      font-weight: 400;
-      line-height: 1.5;
-      padding: 16px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    .container {
-      max-width: 1012px;
-      margin: 0 auto;
-    }
-
-    .header {
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--color-border-muted);
-    }
-
-    .header h1 {
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--color-fg-default);
-      margin-bottom: 4px;
-    }
-
-    .header p {
-      color: var(--color-fg-muted);
-      font-size: 14px;
-    }
-
-    .config-card {
-      background: var(--color-canvas-subtle);
-      border: 1px solid var(--color-border-default);
-      border-radius: 6px;
-      margin-bottom: 16px;
-      padding: 0;
-    }
-
-    .config-card:hover {
-      border-color: var(--color-border-default);
-    }
-
-    .config-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--color-border-muted);
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--color-fg-default);
-    }
-
-    .config-title .refresh-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--color-fg-muted);
-      background-color: transparent;
-      border: 1px solid var(--color-border-default);
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .config-title .refresh-btn:hover {
-      color: var(--color-accent-fg);
-      border-color: var(--color-accent-fg);
-      background-color: rgba(88, 166, 255, 0.05);
-    }
-
-    .config-title .refresh-btn:active {
-      background-color: rgba(88, 166, 255, 0.1);
-    }
-
-    .refresh-icon {
-      width: 14px;
-      height: 14px;
-      stroke: currentColor;
-    }
-
-    .config-content {
-      padding: 16px;
-      background: var(--color-canvas-default);
-      border-top: 1px solid var(--color-border-muted);
-    }
-
-    .config-content pre {
-      font-family: "Fira Code", monospace;
-      font-size: 12px;
-      color: var(--color-fg-default);
-      overflow-x: auto;
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-all;
-      line-height: 1.6;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      border: 1px solid var(--color-border-default);
-      background-color: transparent;
-      color: var(--color-fg-muted);
-      transition: all 0.2s ease;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      text-decoration: none;
-      overflow: hidden;
-    }
-
-    .button:hover {
-      color: var(--color-fg-default);
-      border-color: var(--color-border-default);
-      background-color: var(--color-canvas-inset);
-    }
-
-    .button:active {
-      background-color: rgba(48, 54, 61, 0.5);
-    }
-
-    .button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .button:focus-visible {
-      outline: 2px solid var(--color-accent-fg);
-      outline-offset: 2px;
-    }
-
-    .copy-buttons {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      border: 1px solid var(--color-border-default);
-      background-color: transparent;
-      color: var(--color-fg-muted);
-      transition: all 0.2s ease;
-    }
-
-    .copy-buttons:hover {
-      color: var(--color-fg-default);
-      border-color: var(--color-border-default);
-      background-color: var(--color-canvas-inset);
-    }
-
-    .copy-buttons:active {
-      background-color: rgba(48, 54, 61, 0.5);
-    }
-
-    .copy-buttons.copied {
-      color: var(--color-success-fg);
-      border-color: var(--color-success-fg);
-    }
-
-    .copy-buttons.error {
-      color: var(--color-danger-fg);
-      border-color: var(--color-danger-fg);
-    }
-
-    .copy-icon {
-      width: 14px;
-      height: 14px;
-      stroke: currentColor;
-    }
-
-    .client-buttons {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 8px;
-      padding: 12px 16px;
-      border-top: 1px solid var(--color-border-muted);
-    }
-
-    .client-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
-      text-align: center;
-      color: var(--color-fg-default);
-      background-color: var(--color-canvas-inset);
-      border: 1px solid var(--color-border-default);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      overflow: hidden;
-    }
-
-    .client-btn:hover {
-      background-color: var(--color-accent-fg);
-      color: var(--color-canvas-default);
-      border-color: var(--color-accent-fg);
-    }
-
-    .client-btn:active {
-      background-color: #0969da;
-    }
-
-    .client-icon {
-      width: 16px;
-      height: 16px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .client-icon svg {
-      width: 14px;
-      height: 14px;
-      fill: currentColor;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 32px;
-      padding-top: 16px;
-      border-top: 1px solid var(--color-border-muted);
-      color: var(--color-fg-muted);
-      font-size: 12px;
-    }
-
-    .footer p {
-      margin-bottom: 4px;
-    }
-
-    ::-webkit-scrollbar {
-      width: 12px;
-      height: 12px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: var(--color-canvas-default);
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--color-border-default);
-      border-radius: 6px;
-      border: 2px solid var(--color-canvas-default);
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--color-border-muted);
-    }
-
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--color-border-default) var(--color-canvas-default);
-    }
-
-    .ip-info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 12px;
-    }
-
-    .ip-info-section {
-      background: var(--color-canvas-default);
-      border-radius: 4px;
-      padding: 12px;
-      border: 1px solid var(--color-border-muted);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .ip-info-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--color-border-muted);
-    }
-
-    .ip-info-header svg {
-      width: 16px;
-      height: 16px;
-      stroke: var(--color-accent-fg);
-      flex-shrink: 0;
-    }
-
-    .ip-info-header h3 {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--color-fg-default);
-      margin: 0;
-    }
-
-    .ip-info-content {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .ip-info-item {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .ip-info-item .label {
-      font-size: 11px;
-      color: var(--color-fg-subtle);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      font-weight: 600;
-    }
-
-    .ip-info-item .value {
-      font-size: 13px;
-      color: var(--color-fg-default);
-      word-break: break-all;
-      line-height: 1.4;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .badge-yes {
-      background-color: rgba(63, 185, 80, 0.1);
-      color: var(--color-success-fg);
-      border: 1px solid rgba(63, 185, 80, 0.2);
-    }
-
-    .badge-no {
-      background-color: rgba(248, 81, 73, 0.1);
-      color: var(--color-danger-fg);
-      border: 1px solid rgba(248, 81, 73, 0.2);
-    }
-
-    .badge-neutral {
-      background-color: rgba(88, 166, 255, 0.1);
-      color: var(--color-accent-fg);
-      border: 1px solid rgba(88, 166, 255, 0.2);
-    }
-
-    .badge-warning {
-      background-color: rgba(210, 153, 34, 0.1);
-      color: var(--color-warning-fg);
-      border: 1px solid rgba(210, 153, 34, 0.2);
-    }
-
-    .skeleton {
-      display: block;
-      background: linear-gradient(90deg, var(--color-canvas-subtle) 25%, var(--color-border-default) 50%, var(--color-canvas-subtle) 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-      border-radius: 4px;
-      height: 16px;
-    }
-
-    @keyframes loading {
-      0% {
-        background-position: 200% 0;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VLESS Proxy Configuration</title>
+    <link
+      rel="icon"
+      href="https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/raven.png"
+      type="image/png"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      100% {
-        background-position: -200% 0;
+
+      :root {
+        --color-canvas-default: #0d1117;
+        --color-canvas-subtle: #161b22;
+        --color-canvas-inset: #010409;
+        --color-border-default: #30363d;
+        --color-border-muted: #21262d;
+        --color-fg-default: #c9d1d9;
+        --color-fg-muted: #8b949e;
+        --color-fg-subtle: #6e7681;
+        --color-accent-fg: #58a6ff;
+        --color-success-fg: #3fb950;
+        --color-warning-fg: #d29922;
+        --color-danger-fg: #f85149;
       }
-    }
 
-    .country-flag {
-      display: inline-block;
-      width: 16px;
-      height: auto;
-      max-height: 12px;
-      margin-right: 4px;
-      vertical-align: middle;
-      border-radius: 2px;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.2s ease, visibility 0.2s ease;
-    }
-
-    .modal-overlay.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .modal-content {
-      background: var(--color-canvas-subtle);
-      padding: 20px;
-      border-radius: 6px;
-      border: 1px solid var(--color-border-default);
-      width: 90%;
-      max-width: 420px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-      transform: scale(0.9);
-      transition: transform 0.2s ease;
-    }
-
-    .modal-overlay.visible .modal-content {
-      transform: scale(1);
-    }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--color-fg-default);
-      margin-bottom: 12px;
-    }
-
-    .modal-text {
-      color: var(--color-fg-muted);
-      font-size: 13px;
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-
-    .modal-instruction {
-      background: var(--color-canvas-default);
-      padding: 12px;
-      border-radius: 4px;
-      margin-bottom: 16px;
-      font-size: 12px;
-      line-height: 1.6;
-      border: 1px solid var(--color-border-muted);
-      color: var(--color-fg-default);
-    }
-
-    .modal-instruction code {
-      background: var(--color-canvas-inset);
-      color: var(--color-accent-fg);
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: "Fira Code", monospace;
-      font-size: 11px;
-    }
-
-    #hiddify-modal-continue {
-      width: 100%;
-    }
-
-    .modal-textarea {
-      width: 100%;
-      height: 100px;
-      background-color: var(--color-canvas-inset);
-      border: 1px solid var(--color-border-default);
-      border-radius: 4px;
-      color: var(--color-fg-default);
-      font-family: "Fira Code", monospace;
-      font-size: 12px;
-      padding: 8px;
-      resize: none;
-      transition: border-color 0.2s ease;
-    }
-
-    .modal-textarea::placeholder {
-      color: var(--color-fg-subtle);
-    }
-
-    .modal-textarea:focus {
-      border-color: var(--color-accent-fg);
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
-    }
-
-    .modal-btn-group {
-      display: flex;
-      gap: 8px;
-    }
-
-    .modal-btn-secondary {
-      flex: 1;
-      background-color: transparent;
-      color: var(--color-fg-muted);
-      border-radius: 4px;
-      border: 1px solid var(--color-border-default);
-    }
-
-    .modal-btn-secondary:hover {
-      background-color: var(--color-canvas-inset);
-      border-color: var(--color-border-default);
-    }
-
-    .custom-routing-trigger {
-      display: block;
-      text-align: center;
-      margin: 16px auto 8px auto;
-      color: var(--color-accent-fg);
-      font-size: 12px;
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .custom-routing-trigger:hover {
-      border-color: var(--color-accent-fg);
-    }
-
-    @media (max-width: 768px) {
+      html,
       body {
-        padding: 12px;
+        background-color: var(--color-canvas-default);
+        color: var(--color-fg-default);
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 1.5;
+        padding: 16px;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
 
       .container {
-        max-width: 100%;
+        max-width: 1012px;
+        margin: 0 auto;
       }
 
       .header {
-        margin-bottom: 16px;
-        padding-bottom: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--color-border-muted);
       }
 
       .header h1 {
-        font-size: 24px;
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--color-fg-default);
+        margin-bottom: 4px;
       }
 
       .header p {
-        font-size: 12px;
-      }
-
-      .ip-info-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        color: var(--color-fg-muted);
+        font-size: 14px;
       }
 
       .config-card {
-        margin-bottom: 12px;
+        background: var(--color-canvas-subtle);
+        border: 1px solid var(--color-border-default);
+        border-radius: 6px;
+        margin-bottom: 16px;
+        padding: 0;
+      }
+
+      .config-card:hover {
+        border-color: var(--color-border-default);
       }
 
       .config-title {
-        padding: 12px;
-        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--color-border-muted);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--color-fg-default);
+      }
+
+      .config-title .refresh-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--color-fg-muted);
+        background-color: transparent;
+        border: 1px solid var(--color-border-default);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .config-title .refresh-btn:hover {
+        color: var(--color-accent-fg);
+        border-color: var(--color-accent-fg);
+        background-color: rgba(88, 166, 255, 0.05);
+      }
+
+      .config-title .refresh-btn:active {
+        background-color: rgba(88, 166, 255, 0.1);
+      }
+
+      .refresh-icon {
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
       }
 
       .config-content {
-        padding: 12px;
+        padding: 16px;
+        background: var(--color-canvas-default);
+        border-top: 1px solid var(--color-border-muted);
       }
 
       .config-content pre {
-        font-size: 11px;
-      }
-
-      .client-buttons {
-        grid-template-columns: 1fr;
-        gap: 8px;
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+        color: var(--color-fg-default);
+        overflow-x: auto;
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-all;
+        line-height: 1.6;
       }
 
       .button {
-        font-size: 11px;
-        padding: 4px 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--color-border-default);
+        background-color: transparent;
+        color: var(--color-fg-muted);
+        transition: all 0.2s ease;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        text-decoration: none;
+        overflow: hidden;
+      }
+
+      .button:hover {
+        color: var(--color-fg-default);
+        border-color: var(--color-border-default);
+        background-color: var(--color-canvas-inset);
+      }
+
+      .button:active {
+        background-color: rgba(48, 54, 61, 0.5);
+      }
+
+      .button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .button:focus-visible {
+        outline: 2px solid var(--color-accent-fg);
+        outline-offset: 2px;
       }
 
       .copy-buttons {
-        font-size: 11px;
-        padding: 4px 10px;
-      }
-
-      .ip-info-section {
-        padding: 10px;
+        display: inline-flex;
+        align-items: center;
         gap: 6px;
-      }
-
-      .ip-info-header h3 {
+        padding: 4px 12px;
+        border-radius: 4px;
         font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--color-border-default);
+        background-color: transparent;
+        color: var(--color-fg-muted);
+        transition: all 0.2s ease;
       }
 
-      .ip-info-content {
-        gap: 6px;
+      .copy-buttons:hover {
+        color: var(--color-fg-default);
+        border-color: var(--color-border-default);
+        background-color: var(--color-canvas-inset);
       }
 
-      .ip-info-item .label {
-        font-size: 10px;
+      .copy-buttons:active {
+        background-color: rgba(48, 54, 61, 0.5);
       }
 
-      .ip-info-item .value {
-        font-size: 12px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      body {
-        padding: 8px;
-        font-size: 13px;
+      .copy-buttons.copied {
+        color: var(--color-success-fg);
+        border-color: var(--color-success-fg);
       }
 
-      .container {
-        max-width: 100%;
+      .copy-buttons.error {
+        color: var(--color-danger-fg);
+        border-color: var(--color-danger-fg);
       }
 
-      .header h1 {
-        font-size: 20px;
-      }
-
-      .header p {
-        font-size: 11px;
-      }
-
-      .ip-info-grid {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-
-      .config-card {
-        margin-bottom: 12px;
-      }
-
-      .config-title {
-        padding: 10px;
-        font-size: 12px;
-      }
-
-      .config-content {
-        padding: 10px;
-      }
-
-      .config-content pre {
-        font-size: 10px;
-        line-height: 1.5;
-      }
-
-      .button {
-        font-size: 11px;
-        padding: 3px 8px;
-      }
-
-      .ip-info-section {
-        padding: 8px;
-        gap: 6px;
-      }
-
-      .ip-info-header {
-        gap: 6px;
-      }
-
-      .ip-info-header h3 {
-        font-size: 12px;
-      }
-
-      .ip-info-header svg {
+      .copy-icon {
         width: 14px;
         height: 14px;
+        stroke: currentColor;
       }
 
-      .ip-info-item .label {
-        font-size: 9px;
+      .client-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid var(--color-border-muted);
       }
 
-      .ip-info-item .value {
-        font-size: 11px;
-      }
-
-      .badge {
-        font-size: 9px;
-        padding: 2px 6px;
-      }
-
-      .modal-content {
-        width: 90%;
-        max-width: 100%;
-        padding: 16px;
-      }
-
-      .modal-title {
-        font-size: 15px;
-        margin-bottom: 10px;
-      }
-
-      .modal-text {
+      .client-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 4px;
         font-size: 12px;
-        margin-bottom: 12px;
+        font-weight: 500;
+        text-align: center;
+        color: var(--color-fg-default);
+        background-color: var(--color-canvas-inset);
+        border: 1px solid var(--color-border-default);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        overflow: hidden;
+      }
+
+      .client-btn:hover {
+        background-color: var(--color-accent-fg);
+        color: var(--color-canvas-default);
+        border-color: var(--color-accent-fg);
+      }
+
+      .client-btn:active {
+        background-color: #0969da;
+      }
+
+      .client-icon {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .client-icon svg {
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
       }
 
       .footer {
-        font-size: 11px;
-        margin-top: 24px;
+        text-align: center;
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--color-border-muted);
+        color: var(--color-fg-muted);
+        font-size: 12px;
       }
-    }
-  </style>
+
+      .footer p {
+        margin-bottom: 4px;
+      }
+
+      ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--color-canvas-default);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: var(--color-border-default);
+        border-radius: 6px;
+        border: 2px solid var(--color-canvas-default);
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--color-border-muted);
+      }
+
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border-default) var(--color-canvas-default);
+      }
+
+      .ip-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 12px;
+      }
+
+      .ip-info-section {
+        background: var(--color-canvas-default);
+        border-radius: 4px;
+        padding: 12px;
+        border: 1px solid var(--color-border-muted);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .ip-info-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--color-border-muted);
+      }
+
+      .ip-info-header svg {
+        width: 16px;
+        height: 16px;
+        stroke: var(--color-accent-fg);
+        flex-shrink: 0;
+      }
+
+      .ip-info-header h3 {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--color-fg-default);
+        margin: 0;
+      }
+
+      .ip-info-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .ip-info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .ip-info-item .label {
+        font-size: 11px;
+        color: var(--color-fg-subtle);
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        font-weight: 600;
+      }
+
+      .ip-info-item .value {
+        font-size: 13px;
+        color: var(--color-fg-default);
+        word-break: break-all;
+        line-height: 1.4;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+      }
+
+      .badge-yes {
+        background-color: rgba(63, 185, 80, 0.1);
+        color: var(--color-success-fg);
+        border: 1px solid rgba(63, 185, 80, 0.2);
+      }
+
+      .badge-no {
+        background-color: rgba(248, 81, 73, 0.1);
+        color: var(--color-danger-fg);
+        border: 1px solid rgba(248, 81, 73, 0.2);
+      }
+
+      .badge-neutral {
+        background-color: rgba(88, 166, 255, 0.1);
+        color: var(--color-accent-fg);
+        border: 1px solid rgba(88, 166, 255, 0.2);
+      }
+
+      .badge-warning {
+        background-color: rgba(210, 153, 34, 0.1);
+        color: var(--color-warning-fg);
+        border: 1px solid rgba(210, 153, 34, 0.2);
+      }
+
+      .skeleton {
+        display: block;
+        background: linear-gradient(
+          90deg,
+          var(--color-canvas-subtle) 25%,
+          var(--color-border-default) 50%,
+          var(--color-canvas-subtle) 75%
+        );
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+        height: 16px;
+      }
+
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      .country-flag {
+        display: inline-block;
+        width: 16px;
+        height: auto;
+        max-height: 12px;
+        margin-right: 4px;
+        vertical-align: middle;
+        border-radius: 2px;
+      }
+
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition:
+          opacity 0.2s ease,
+          visibility 0.2s ease;
+      }
+
+      .modal-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .modal-content {
+        background: var(--color-canvas-subtle);
+        padding: 20px;
+        border-radius: 6px;
+        border: 1px solid var(--color-border-default);
+        width: 90%;
+        max-width: 420px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        transition: transform 0.2s ease;
+      }
+
+      .modal-overlay.visible .modal-content {
+        transform: scale(1);
+      }
+
+      .modal-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--color-fg-default);
+        margin-bottom: 12px;
+      }
+
+      .modal-text {
+        color: var(--color-fg-muted);
+        font-size: 13px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+
+      .modal-instruction {
+        background: var(--color-canvas-default);
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 16px;
+        font-size: 12px;
+        line-height: 1.6;
+        border: 1px solid var(--color-border-muted);
+        color: var(--color-fg-default);
+      }
+
+      .modal-instruction code {
+        background: var(--color-canvas-inset);
+        color: var(--color-accent-fg);
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: "Fira Code", monospace;
+        font-size: 11px;
+      }
+
+      #hiddify-modal-continue {
+        width: 100%;
+      }
+
+      .modal-textarea {
+        width: 100%;
+        height: 100px;
+        background-color: var(--color-canvas-inset);
+        border: 1px solid var(--color-border-default);
+        border-radius: 4px;
+        color: var(--color-fg-default);
+        font-family: "Fira Code", monospace;
+        font-size: 12px;
+        padding: 8px;
+        resize: none;
+        transition: border-color 0.2s ease;
+      }
+
+      .modal-textarea::placeholder {
+        color: var(--color-fg-subtle);
+      }
+
+      .modal-textarea:focus {
+        border-color: var(--color-accent-fg);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+      }
+
+      .modal-btn-group {
+        display: flex;
+        gap: 8px;
+      }
+
+      .modal-btn-secondary {
+        flex: 1;
+        background-color: transparent;
+        color: var(--color-fg-muted);
+        border-radius: 4px;
+        border: 1px solid var(--color-border-default);
+      }
+
+      .modal-btn-secondary:hover {
+        background-color: var(--color-canvas-inset);
+        border-color: var(--color-border-default);
+      }
+
+      .custom-routing-trigger {
+        display: block;
+        text-align: center;
+        margin: 16px auto 8px auto;
+        color: var(--color-accent-fg);
+        font-size: 12px;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .custom-routing-trigger:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      @media (max-width: 768px) {
+        body {
+          padding: 12px;
+        }
+
+        .container {
+          max-width: 100%;
+        }
+
+        .header {
+          margin-bottom: 16px;
+          padding-bottom: 12px;
+        }
+
+        .header h1 {
+          font-size: 24px;
+        }
+
+        .header p {
+          font-size: 12px;
+        }
+
+        .ip-info-grid {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .config-card {
+          margin-bottom: 12px;
+        }
+
+        .config-title {
+          padding: 12px;
+          font-size: 13px;
+        }
+
+        .config-content {
+          padding: 12px;
+        }
+
+        .config-content pre {
+          font-size: 11px;
+        }
+
+        .client-buttons {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .button {
+          font-size: 11px;
+          padding: 4px 10px;
+        }
+
+        .copy-buttons {
+          font-size: 11px;
+          padding: 4px 10px;
+        }
+
+        .ip-info-section {
+          padding: 10px;
+          gap: 6px;
+        }
+
+        .ip-info-header h3 {
+          font-size: 12px;
+        }
+
+        .ip-info-content {
+          gap: 6px;
+        }
+
+        .ip-info-item .label {
+          font-size: 10px;
+        }
+
+        .ip-info-item .value {
+          font-size: 12px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        body {
+          padding: 8px;
+          font-size: 13px;
+        }
+
+        .container {
+          max-width: 100%;
+        }
+
+        .header h1 {
+          font-size: 20px;
+        }
+
+        .header p {
+          font-size: 11px;
+        }
+
+        .ip-info-grid {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .config-card {
+          margin-bottom: 12px;
+        }
+
+        .config-title {
+          padding: 10px;
+          font-size: 12px;
+        }
+
+        .config-content {
+          padding: 10px;
+        }
+
+        .config-content pre {
+          font-size: 10px;
+          line-height: 1.5;
+        }
+
+        .button {
+          font-size: 11px;
+          padding: 3px 8px;
+        }
+
+        .ip-info-section {
+          padding: 8px;
+          gap: 6px;
+        }
+
+        .ip-info-header {
+          gap: 6px;
+        }
+
+        .ip-info-header h3 {
+          font-size: 12px;
+        }
+
+        .ip-info-header svg {
+          width: 14px;
+          height: 14px;
+        }
+
+        .ip-info-item .label {
+          font-size: 9px;
+        }
+
+        .ip-info-item .value {
+          font-size: 11px;
+        }
+
+        .badge {
+          font-size: 9px;
+          padding: 2px 6px;
+        }
+
+        .modal-content {
+          width: 90%;
+          max-width: 100%;
+          padding: 16px;
+        }
+
+        .modal-title {
+          font-size: 15px;
+          margin-bottom: 10px;
+        }
+
+        .modal-text {
+          font-size: 12px;
+          margin-bottom: 12px;
+        }
+
+        .footer {
+          font-size: 11px;
+          margin-top: 24px;
+        }
+      }
+    </style>
   </head>
   <body data-proxy-ip="{{PROXY_ADDRESS}}">
     <div class="container">
@@ -943,7 +958,9 @@
           <a href="{{URL_CLASH}}" class="button client-btn">
             <span class="client-icon">
               <svg viewBox="0 0 24 24">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39-1.1 0-2 .9-2 2v1.93z" />
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39-1.1 0-2 .9-2 2v1.93z"
+                />
               </svg>
             </span>
             <span class="button-text">Import to Clash Meta</span>
@@ -951,7 +968,9 @@
           <a href="{{URL_EXCLAVE}}" class="button client-btn">
             <span class="client-icon">
               <svg viewBox="0 0 24 24">
-                <path d="M20,8h-3V6c0-1.1-0.9-2-2-2H9C7.9,4,7,4.9,7,6v2H4C2.9,8,2,8.9,2,10v9c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2v-9C22,8.9,21.1,8,20,8z M9,6h6v2H9V6z M20,19H4v-2h16V19z M20,15H4v-5h3v1c0,0.55,0.45,1,1,1h2c0.55,0,1-0.45,1-1v-1h2v1c0,0.55,0.45,1,1,1h2c0.55,0,1-0.45,1-1v-1h3V15z" />
+                <path
+                  d="M20,8h-3V6c0-1.1-0.9-2-2-2H9C7.9,4,7,4.9,7,6v2H4C2.9,8,2,8.9,2,10v9c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2v-9C22,8.9,21.1,8,20,8z M9,6h6v2H9V6z M20,19H4v-2h16V19z M20,15H4v-5h3v1c0,0.55,0.45,1,1,1h2c0.55,0,1-0.45,1-1v-1h2v1c0,0.55,0.45,1,1,1h2c0.55,0,1-0.45,1-1v-1h3V15z"
+                />
                 <circle cx="8.5" cy="13.5" r="1" />
                 <circle cx="15.5" cy="13.5" r="1" />
               </svg>
@@ -961,11 +980,22 @@
         </div>
       </div>
 
-      <div id="custom-config-card" class="config-card" style="display: none;">
+      <div id="custom-config-card" class="config-card" style="display: none">
         <div class="config-title">
           <span>Custom Clean IP Nodes</span>
           <button id="btn-copy-custom" class="button copy-buttons">
-            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              class="copy-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
@@ -980,9 +1010,7 @@
       <span id="open-custom-ips" class="custom-routing-trigger">➔ Define Custom Clean IPs</span>
 
       <div class="footer">
-        <p>
-          © <span id="current-year"></span> <b>REvil</b>, Freedom to Dream
-        </p>
+        <p>© <span id="current-year"></span> <b>REvil</b>, Freedom to Dream</p>
       </div>
     </div>
 
@@ -1005,12 +1033,19 @@
       <div class="modal-content">
         <h3 class="modal-title">Custom Clean IPs</h3>
         <p class="modal-text">
-          Enter your clean Cloudflare IPs or Domains (one per line) to dynamically inject them into your configs.
+          Enter your clean Cloudflare IPs or Domains (one per line) to dynamically inject them into
+          your configs.
         </p>
-        <textarea id="custom-ips-input" class="modal-textarea" placeholder="e.g.&#10;104.20.20.20&#10;clean-cf.yourdomain.com:8443"></textarea>
+        <textarea
+          id="custom-ips-input"
+          class="modal-textarea"
+          placeholder="e.g.&#10;104.20.20.20&#10;clean-cf.yourdomain.com:8443"
+        ></textarea>
         <div class="modal-btn-group">
           <button id="custom-ips-save" class="button client-btn">Save & Generate</button>
-          <button id="custom-ips-cancel" class="button client-btn modal-btn-secondary">Cancel</button>
+          <button id="custom-ips-cancel" class="button client-btn modal-btn-secondary">
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -1117,9 +1152,10 @@
 
         if (elements.location) {
           const countryCode = data.country ? data.country.toLowerCase() : "";
-          const flagElementHtml = (countryCode && countryCode !== "n/a")
-            ? `<img src="https://flagcdn.com/w20/${countryCode}.png" srcset="https://flagcdn.com/w40/${countryCode}.png 2x" alt="${data.country}" class="country-flag"> `
-            : "";
+          const flagElementHtml =
+            countryCode && countryCode !== "n/a"
+              ? `<img src="https://flagcdn.com/w20/${countryCode}.png" srcset="https://flagcdn.com/w40/${countryCode}.png 2x" alt="${data.country}" class="country-flag"> `
+              : "";
           const textPart = [data.city, data.country].filter(Boolean).join(", ");
           elements.location.innerHTML =
             flagElementHtml || textPart ? `${flagElementHtml}${textPart}`.trim() : "N/A";
@@ -1175,7 +1211,9 @@
             let resolvedProxyIp = proxyDomainOrIp;
             if (!/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(proxyDomainOrIp)) {
               try {
-                const dnsRes = await fetch(`/resolve-domain?domain=${encodeURIComponent(proxyDomainOrIp)}`);
+                const dnsRes = await fetch(
+                  `/resolve-domain?domain=${encodeURIComponent(proxyDomainOrIp)}`,
+                );
                 if (dnsRes.ok) {
                   const dnsData = await dnsRes.json();
                   if (dnsData.ip) resolvedProxyIp = dnsData.ip;
@@ -1202,7 +1240,6 @@
             console.error("Error loading client info:", e);
             showError("client", "Could not load client IP details.");
           }
-
         } catch (error) {
           console.error("Overall network info loading failed:", error);
           showError(
@@ -1226,7 +1263,10 @@
         const pre = document.getElementById("custom-configs-pre");
         if (!card || !pre) return;
 
-        const lines = savedIps.split('\n').map(line => line.trim()).filter(line => line !== "");
+        const lines = savedIps
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line !== "");
         const xrayBase = document.getElementById("xray-config")?.textContent || "";
         const sbBase = document.getElementById("singbox-config")?.textContent || "";
 
@@ -1236,13 +1276,13 @@
           let host = ip;
           let port = "443";
 
-          if (ip.includes(':') && !ip.startsWith('[')) {
-            const parts = ip.split(':');
+          if (ip.includes(":") && !ip.startsWith("[")) {
+            const parts = ip.split(":");
             host = parts[0];
             port = parts[1];
-          } else if (ip.startsWith('[') && ip.includes(']:')) {
-            const parts = ip.split(']:');
-            host = parts[0] + ']';
+          } else if (ip.startsWith("[") && ip.includes("]:")) {
+            const parts = ip.split("]:");
+            host = parts[0] + "]";
             port = parts[1];
           }
 
@@ -1258,12 +1298,14 @@
         });
 
         if (customConfigs.length > 0) {
-          const outputText = customConfigs.join('\n');
+          const outputText = customConfigs.join("\n");
           pre.textContent = outputText;
-          card.style.display = 'block';
-          document.getElementById('btn-copy-custom').onclick = function() { copyToClipboard(this, outputText); };
+          card.style.display = "block";
+          document.getElementById("btn-copy-custom").onclick = function () {
+            copyToClipboard(this, outputText);
+          };
         } else {
-          card.style.display = 'none';
+          card.style.display = "none";
         }
       }
 
@@ -1350,11 +1392,15 @@
 
           const closeModal = () => {
             customModal.classList.remove("visible");
-            setTimeout(() => { customModal.style.display = "none"; }, 300);
+            setTimeout(() => {
+              customModal.style.display = "none";
+            }, 300);
           };
 
           customCancel.addEventListener("click", closeModal);
-          customModal.addEventListener("click", (e) => { if (e.target === customModal) closeModal(); });
+          customModal.addEventListener("click", (e) => {
+            if (e.target === customModal) closeModal();
+          });
 
           customSave.addEventListener("click", () => {
             const value = customInput.value;
@@ -1363,7 +1409,7 @@
             closeModal();
 
             if (value.trim().length > 0) {
-              document.getElementById("custom-config-card").scrollIntoView({ behavior: 'smooth' });
+              document.getElementById("custom-config-card").scrollIntoView({ behavior: "smooth" });
             }
           });
         }
