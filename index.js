@@ -679,10 +679,7 @@ async function handleConfigPage(userID, hostName, proxyAddress) {
         `hiddify://install-config?url=${encodeURIComponent(subXrayUrlH)}`,
       )
       .replace(/{{URL_V2RAYNG}}/g, `v2rayng://install-config?url=${subXrayUrlV}`)
-      .replace(
-        /{{URL_V2RAYNG_ENHANCED}}/g,
-        `v2rayng://install-config?url=${subXrayUrlVEnhanced}`,
-      )
+      .replace(/{{URL_V2RAYNG_ENHANCED}}/g, `v2rayng://install-config?url=${subXrayUrlVEnhanced}`)
       .replace(
         /{{URL_CLASH}}/g,
         `clash://install-config?url=${encodeURIComponent(`https://revil-sub.pages.dev/sub/clash-meta?url=${subSbUrl}`)}`,
