@@ -70,6 +70,11 @@ async fn main() -> Result<()> {
 
     let ranges = fetch_ranges().await?;
 
+    println!("\nCloudflare IPv4 ranges:");
+    for range in &ranges.ipv4_cidrs {
+        println!("{}", range);
+    }
+
     println!(
         "Loaded {} IPv4 ranges and {} IPv6 ranges.",
         ranges.ipv4_cidrs.len(),
@@ -85,6 +90,8 @@ async fn main() -> Result<()> {
         "IPv4: {} candidates passed TCP + TLS + HTTP.",
         ipv4_results.len()
     );
+
+    ipv4_results.sort_by_key(|result| result.latency);
 
     let ipv4_results = ipv4_results
         .into_iter()
