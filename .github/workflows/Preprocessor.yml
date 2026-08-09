@@ -4,8 +4,10 @@ on:
   push:
     branches: ['main']
     paths:
-      - '**/preprocessor.*'
-#     - 'sub/*.json'
+      - 'edge/cf-scanner.rs'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/Preprocessor.yml'
   schedule:
     - cron: '0 6 * * *'
   workflow_dispatch:
@@ -13,9 +15,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        dummy: ['single']
     defaults:
       run:
         shell: bash -e {0}
@@ -28,13 +27,8 @@ jobs:
           submodules: recursive
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-
-      - name: Run script
-        run: php edge/preprocessor.php
+      - name: Run CFScanner
+        run: cargo run --release --bin CFScanner
 
       - name: Configure git
         run: |
