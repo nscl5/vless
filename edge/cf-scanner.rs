@@ -91,8 +91,6 @@ async fn main() -> Result<()> {
         ipv4_results.len()
     );
 
-    ipv4_results.sort_by_key(|result| result.latency);
-
     let ipv4_results = ipv4_results
         .into_iter()
         .take(IPV4_OUTPUT_COUNT)
