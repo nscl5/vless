@@ -1,252 +1,252 @@
 [
   {
     "colo": "Default",
-    "ip": "2c0f:f248:35a5:db87:4ba0:6522:7608:f209",
+    "ip": "2400:cb00:547a:d6c0:dd61:a84c:7eb5:5411",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2400:cb00:d3e3:501e:6cc3:5368:c43c:75d3",
+    "ip": "2606:4700:14b7:791:6c9e:bc3a:b536:f2ad",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2803:f800:bda9:6a2f:5ebc:e4e1:a046:ac47",
+    "ip": "2c0f:f248:2a87:e6da:d4c1:e829:e610:9cc4",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2a06:98c1:de66:1cfa:b523:85f1:27f8:f6cf",
+    "ip": "2803:f800:8653:ddb1:4a7c:8e72:3e7e:3cb",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2405:b500:8b93:2a92:d008:b38a:df17:92e3",
+    "ip": "2a06:98c3:afd5:879:4383:c253:f3e8:1b72",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2405:b500:991d:9bb7:2ce8:7dc0:aba:2653",
+    "ip": "2803:f800:e288:5580:c696:20b:b0e1:25a2",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2a06:98c4:fa6:37f:6f30:3356:5beb:b3a9",
+    "ip": "2803:f800:d790:f014:d41f:1896:8826:e1e9",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2400:cb00:7ff8:8a5d:c3d7:9f6f:8d82:7ccd",
+    "ip": "2803:f800:3cd8:8cb0:9fa8:1354:27e:8c87",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2c0f:f248:b4f:f921:ff08:cf7f:a9a2:3f",
+    "ip": "2400:cb00:29ae:9364:9492:b8ff:1521:c550",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2c0f:f248:4dbf:47ff:683f:2c65:b944:2a2d",
+    "ip": "2405:8100:5a7d:a9eb:57ef:df61:8d07:2249",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2c0f:f248:3123:8190:f985:48f7:1c92:8cfd",
+    "ip": "2a06:98c3:d210:64a5:3ce3:a68e:92cb:ea90",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2405:b500:978f:3c01:44b6:28fd:a99b:3df2",
+    "ip": "2400:cb00:a19b:75cd:d243:1b0f:93aa:ce52",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2a06:98c7:1e47:b0ba:a291:b2f0:2bf6:cd74",
+    "ip": "2606:4700:9c18:7b20:9b0c:2b7a:d0ae:5dc",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2803:f800:20aa:a748:8e10:a78c:ee1f:5682",
+    "ip": "2a06:98c3:1649:47de:3d88:34:2f3a:c974",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2606:4700:9ea0:1efe:e58e:3227:5b17:cc24",
+    "ip": "2400:cb00:1707:f782:4b72:fae8:d9e2:9d45",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2a06:98c7:56db:ceb6:f288:4e85:6b5b:f66",
+    "ip": "2405:8100:a71c:6f31:9df:bd41:ede3:951a",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2803:f800:1b4:8ffa:a4e0:cfef:3a8e:a6f7",
+    "ip": "2405:b500:401c:2552:c25b:240b:97b7:53b3",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2803:f800:7176:53d0:f484:7b17:e85d:7d63",
+    "ip": "2400:cb00:a296:296b:fdef:b99b:e544:157a",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2400:cb00:dce4:7371:ef71:3265:fbf7:6ec3",
+    "ip": "2a06:98c1:7d3e:dbc5:c4e7:31cd:fd17:5919",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2606:4700:6f25:5518:7347:bd4e:7a0c:8381",
+    "ip": "2405:8100:148d:6589:b170:61a0:d8a8:6c9a",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2a06:98c6:3323:97ac:d6dc:52e5:b619:834d",
+    "ip": "2c0f:f248:f5a2:8200:a2c6:d21d:e1ad:b9c7",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2405:8100:f71d:d3a5:b215:71b7:9f2e:5e3c",
+    "ip": "2a06:98c5:390f:9f16:19b7:4c31:f3cf:c319",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2405:8100:507c:a116:4907:b8c:754f:43de",
+    "ip": "2a06:98c7:3c4d:f0c7:27c2:c7a4:7c28:ee27",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2405:b500:a578:9e44:37ab:dd07:7a9b:462e",
+    "ip": "2a06:98c1:645e:6162:272c:e5c8:f304:47a0",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   },
   {
     "colo": "Default",
-    "ip": "2400:cb00:927b:bb47:b407:3e6f:be:d85a",
+    "ip": "2405:8100:947:825a:40ac:1924:c435:70aa",
     "latency": 0,
     "line": "CF",
     "loss": 0,
     "node": "CFScanner",
     "speed": 0,
-    "time": "2026-08-09 11:39:43"
+    "time": "2026-08-09 13:47:36"
   }
 ]
