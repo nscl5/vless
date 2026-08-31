@@ -1,0 +1,179 @@
+name: Update Configs
+permissions: write-all
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch: 
+
+concurrency:
+  group: update-configs
+  cancel-in-progress: false
+
+jobs:
+  update-configs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+
+    - name: Configure Git and sync with latest main
+      run: |
+        git config --global user.name "NET-Sentinel Bot"
+        git config --global user.email "224584266+NetSentinel-Bot@users.noreply.github.com"
+        git pull --rebase origin main
+      
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: '1.26.5'
+        cache: true
+        
+    - name: Build and run Go aggregator
+      run: |
+        echo "Building Go application..."
+        go mod tidy
+        go build -ldflags="-s -w" -o aggregator *.go
+        echo "Starting config aggregation and sorting..."
+        ulimit -n 65535
+        ./aggregator
+        echo "Config processing completed successfully!"
+      env:
+        V2GO_TEST_CONCURRENCY: "500"
+      
+    - name: Verify output files
+      run: |
+        echo "Verifying generated files..."
+        echo "Files in root directory:"
+        ls -la *.txt 2>/dev/null || echo "No .txt files found in root"
+        
+        echo "\nProtocol directory contents:"
+        ls -la By-protocol/ 2>/dev/null || echo "No protocol directory found"
+        
+        echo "\nSub files:"
+        ls -la Sub*.txt 2>/dev/null || echo "No Sub files found"
+        
+        echo "\nBase64 directory:"
+        ls -la B64/ 2>/dev/null || echo "No B64 directory found"
+
+        if [ -f "AllConfigsSub.txt" ]; then
+          TOTAL_CONFIGS=$(wc -l < AllConfigsSub.txt)
+          FILE_SIZE=$(du -h AllConfigsSub.txt | cut -f1)
+          echo "\nMain config file: $TOTAL_CONFIGS configurations ($FILE_SIZE)"
+        else
+          echo "\nMain config file not found - checking if it was split..."
+        fi
+
+        if [ -d "By-protocol" ]; then
+          echo "\nProtocol file statistics:"
+          for file in By-protocol/*.txt; do
+            if [ -f "$file" ]; then
+              count=$(wc -l < "$file")
+              size=$(du -h "$file" | cut -f1)
+              basename=$(basename "$file")
+              echo "  $basename: $count configs ($size)"
+            fi
+          done
+        fi
+      
+    - name: Handle large files and prepare for commit
+      run: |
+        echo "Checking file sizes and handling large files..."
+
+        handle_large_file() {
+          local file="$1"
+          local prefix="$2"
+          
+          if [ -f "$file" ]; then
+            size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo 0)
+            size_mb=$((size / 1024 / 1024))
+            echo "File $file size: ${size_mb}MB"
+            
+            if [ $size_mb -gt 90 ]; then
+              echo "Splitting large file: $file"
+              split -b 90M "$file" "${prefix}_part_"
+              rm "$file"
+              echo "File split into parts with prefix: ${prefix}_part_"
+            fi
+          fi
+        }
+        
+        handle_large_file "AllConfigsSub.txt" "AllConfigsSub"
+        
+        if [ -d "By-protocol" ]; then
+          for protocol_file in By-protocol/*.txt; do
+            if [ -f "$protocol_file" ]; then
+              filename=$(basename "$protocol_file" .txt)
+              handle_large_file "$protocol_file" "By-protocol/${filename}"
+            fi
+          done
+        fi
+        
+    - name: Commit and push changes
+        run: |
+          git config --global user.name "NET-Sentinel Bot"
+          git config --global user.email "224584266+NetSentinel-Bot@users.noreply.github.com"
+          git add .
+          
+          if ! git diff --staged --quiet; then
+            git commit -m "Fresh update"
+            git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
+          else
+            echo "No changes to commit."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  cleanup-old-files:
+    runs-on: ubuntu-latest
+    needs: update-configs
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Delete sub files older than 24 hours
+        run: |
+          echo "🧹 Checking for .txt sub files older than 24 hours..."
+          shopt -s nullglob 2>/dev/null || true
+          THRESHOLD=$(($(date +%s) - 86400))
+          DELETED=0
+
+          for file in Sub*.txt B64/Sub*_b64.txt By-country/*.txt By-protocol/*.txt; do
+            [ -f "$file" ] || continue
+            last_commit=$(git log -1 --format=%ct -- "$file" 2>/dev/null)
+            if [ -n "$last_commit" ] && [ "$last_commit" -lt "$THRESHOLD" ]; then
+              echo "  Deleting (last modified $(( ($(date +%s) - last_commit) / 3600 ))h ago): $file"
+              git rm "$file"
+              DELETED=$((DELETED + 1))
+            fi
+          done
+
+          if [ $DELETED -eq 0 ]; then
+            echo "  No stale files found."
+          else
+            echo "  Removed $DELETED stale file(s)."
+          fi
+
+      - name: Commit and push cleanup
+        run: |
+          if git diff --staged --quiet 2>/dev/null; then
+            echo "No cleanup changes to commit."
+          else
+            git config --global user.name "NET-Sentinel Bot"
+            git config --global user.email "224584266+NetSentinel-Bot@users.noreply.github.com"
+            git commit -m "🧹 Cleanup: Remove sub files older than 24 hours"
+            git pull --rebase "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" main
+            git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
