@@ -24,8 +24,7 @@ const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
 const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.csv";
 
 const MAX_CONCURRENT_SCANS: usize = 80;
-const TIMEOUT_SECONDS: u64 = 5;
-const RISK_TIMEOUT_SECONDS: u64 = 12;
+const TIMEOUT_SECONDS: u64 = 10;
 const TARGET_PROXY_PORT: u16 = 443;
 
 const NORTHERN_TERRITORY_ENV: &str = "NORTHERN_TERRITORY";
@@ -287,7 +286,7 @@ async fn fetch_risk_assessment(
     start_index: usize,
 ) -> Result<(i64, String)> {
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(RISK_TIMEOUT_SECONDS))
+        .timeout(Duration::from_secs(TIMEOUT_SECONDS))
         .danger_accept_invalid_certs(true)
         .build()?;
 
