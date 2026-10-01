@@ -28,7 +28,7 @@ const RISK_TIMEOUT_SECONDS: u64 = 12;
 const TARGET_PROXY_PORT: u16 = 443;
 
 const NORTHERN_TERRITORY_ENV: &str = "NORTHERN_TERRITORY";
-const RISK_API_HOST_ENV: &str = "apiiii.pages.dev";
+const RISK_API_HOST_ENV: &str = "RISK_API_HOST";
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
