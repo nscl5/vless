@@ -86,20 +86,6 @@ async fn main() -> Result<()> {
     let mut seen_ips: HashSet<String> = HashSet::new();
     let mut proxy_candidates: Vec<(String, u16, String)> = Vec::new();
     
-    match read_csv_proxy_file(SECONDARY_PROXY_FILE) {
-      Ok(list) => {
-          let mut added = 0;
-          for (ip, port, isp) in list {
-              if seen_ips.insert(ip.clone()) {
-                  proxy_candidates.push((ip, port, isp));
-                  added += 1;
-              }
-          }
-          println!("Picked up {} candidates from the csv file", added);
-      }
-      Err(e) => println!("⚠️  Heads up — couldn't read the csv file: {}", e),
-    }
-
     match read_proxy_file(DEFAULT_PROXY_FILE) {
         Ok(list) => {
             for (ip, port, isp) in list {
