@@ -22,14 +22,13 @@ const CLOUDFLARE_META_ENDPOINT: &str = "/meta";
 
 const DEFAULT_OUTPUT_FILE: &str = "sub/ProxyIP-Daily.md";
 const DEFAULT_PROXY_FILE: &str = "edge/assets/p-legacies.csv";
-const SECONDARY_PROXY_FILE: &str = "sub/country_proxies/02_proxies.csv";
-
-const MAX_CONCURRENT_SCANS: usize = 150;
+const MAX_CONCURRENT_SCANS: usize = 100;
 const TIMEOUT_SECONDS: u64 = 8;
+const RISK_TIMEOUT_SECONDS: u64 = 12;
 const TARGET_PROXY_PORT: u16 = 443;
 
 const NORTHERN_TERRITORY_ENV: &str = "NORTHERN_TERRITORY";
-const RISK_API_HOST_ENV: &str = "RISK_API_HOST";
+const RISK_API_HOST_ENV: &str = "apiiii.pages.dev";
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
@@ -201,32 +200,6 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn read_csv_proxy_file(file_path: &str) -> io::Result<Vec<(String, u16, String)>> {
-    let file = File::open(file_path)?;
-    let reader = BufReader::new(file);
-    let mut result = Vec::new();
-
-    for (i, line) in reader.lines().enumerate() {
-        let line = line?;
-        if i == 0 {
-            continue;
-        }
-        let trimmed = line.trim();
-        if trimmed.is_empty() {
-            continue;
-        }
-        let parts: Vec<&str> = trimmed.split(',').collect();
-        if parts.len() < 2 {
-            continue;
-        }
-        let ip = parts[0].trim().to_string();
-        let port: u16 = parts[1].trim().parse().unwrap_or(443);
-        result.push((ip, port, "Unknown ISP".to_string()));
-    }
-
-    Ok(result)
-}
-
 fn read_proxy_file(file_path: &str) -> io::Result<Vec<(String, u16, String)>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
@@ -276,7 +249,7 @@ async fn get_scanner_ip() -> Result<String> {
 
 async fn fetch_risk_assessment(ip: &str, api_host: &str) -> Result<(i64, String)> {
     let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(TIMEOUT_SECONDS))
+        .timeout(Duration::from_secs(RISK_TIMEOUT_SECONDS))
         .danger_accept_invalid_certs(true)
         .build()?;
 
@@ -345,7 +318,7 @@ async fn scan_candidate(
 
                         let (fraud_score, risk) = fetch_risk_assessment(&ip, api_host)
                             .await
-                            .unwrap_or((100, "high".to_string()));
+                            .unwrap_or((88, "high".to_string()));
 
                         let info = ProxyInfo {
                             ip: ip.clone(),
