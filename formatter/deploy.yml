@@ -43,7 +43,7 @@ on:
         required: false
         type: boolean
         default: false
-        
+
 permissions:
   contents: read
 
@@ -99,7 +99,7 @@ jobs:
 
       - name: ⬜ Install Rust
         uses: dtolnay/rust-toolchain@stable
-        
+
       - name: ⬜ Cache Rust build
         uses: Swatinem/rust-cache@v2
 
