@@ -6,7 +6,11 @@
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0d1117" />
     <title>VLESS Proxy Configuration</title>
-    <link rel="icon" href="https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/REvil.svg" type="image/svg" />
+    <link
+      rel="icon"
+      href="https://pub-b3ab4c8172fb44e29854df3435aa223d.r2.dev/REvil.svg"
+      type="image/svg"
+    />
     <style>
       :root {
         --fgColor-default: #e6edf3;
@@ -1869,65 +1873,127 @@
       }
 
       @media (max-width: 900px) {
-        .ip-info-grid { grid-template-columns: 1fr; }
+        .ip-info-grid {
+          grid-template-columns: 1fr;
+        }
       }
 
       @media (max-width: 760px) {
-        .cards-row { grid-template-columns: 1fr; }
+        .cards-row {
+          grid-template-columns: 1fr;
+        }
       }
 
       @media (max-width: 640px) {
-        body { padding: 12px; }
-        .container { gap: 10px; }
-        .config-card { padding: 12px; }
+        body {
+          padding: 12px;
+        }
+        .container {
+          gap: 10px;
+        }
+        .config-card {
+          padding: 12px;
+        }
         .header p,
-        .footer { font-size: 11px; }
+        .footer {
+          font-size: 11px;
+        }
 
-        .client-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .client-buttons {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
         .modal-btn-group,
         .fragment-toolbar,
-        .fragment-node-body { grid-template-columns: 1fr; }
-        .fragment-field.full { grid-column: auto; }
-        .fragment-footer {align-items: stretch; flex-direction: column;}
-        .fragment-fingerprint { justify-content: space-between; }
-        .fragment-reset { width: 100%; }
+        .fragment-node-body {
+          grid-template-columns: 1fr;
+        }
+        .fragment-field.full {
+          grid-column: auto;
+        }
+        .fragment-footer {
+          align-items: stretch;
+          flex-direction: column;
+        }
+        .fragment-fingerprint {
+          justify-content: space-between;
+        }
+        .fragment-reset {
+          width: 100%;
+        }
 
         .nat64-header,
-        .proxyip-header { align-items: flex-start; }
+        .proxyip-header {
+          align-items: flex-start;
+        }
         .nat64-status,
-        .proxyip-status { padding: 3px 7px; font-size: 9px; }
-        .nat64-route { overflow-x: auto; }
-        .nat64-route-node { flex: 0 0 auto; }
+        .proxyip-status {
+          padding: 3px 7px;
+          font-size: 9px;
+        }
+        .nat64-route {
+          overflow-x: auto;
+        }
+        .nat64-route-node {
+          flex: 0 0 auto;
+        }
       }
 
       @media (max-width: 430px) {
-        body { padding: 10px; }
+        body {
+          padding: 10px;
+        }
 
         .ip-info-section,
         .config-content,
-        .modal-content { padding: 10px; }
+        .modal-content {
+          padding: 10px;
+        }
 
-        .client-btn { min-height: 32px; }
-        .client-btn .button-text { font-size: 11px; }
+        .client-btn {
+          min-height: 32px;
+        }
+        .client-btn .button-text {
+          font-size: 11px;
+        }
 
         .button,
         .refresh-btn,
         .icon-btn,
-        .client-btn { font-size: 12px; }
+        .client-btn {
+          font-size: 12px;
+        }
 
-        .ip-info-item .label { font-size: 10px; }
-        .ip-info-item .value { font-size: 12px; }
+        .ip-info-item .label {
+          font-size: 10px;
+        }
+        .ip-info-item .value {
+          font-size: 12px;
+        }
 
         .fragment-presets,
-        .fragment-view-toggle {padding: 2px; gap: 2px;}
+        .fragment-view-toggle {
+          padding: 2px;
+          gap: 2px;
+        }
         .fragment-preset,
-        .fragment-view-btn {min-height: 28px; font-size: 10px;}
-        .fragment-status { display: none; }
-        .fragment-heading-text span { font-size: 10px; }
+        .fragment-view-btn {
+          min-height: 28px;
+          font-size: 10px;
+        }
+        .fragment-status {
+          display: none;
+        }
+        .fragment-heading-text span {
+          font-size: 10px;
+        }
         .nat64-header,
-        .proxyip-header { flex-wrap: wrap; }
+        .proxyip-header {
+          flex-wrap: wrap;
+        }
         .nat64-status,
-        .proxyip-status { margin-left: 46px; }
+        .proxyip-status {
+          margin-left: 46px;
+        }
       }
     </style>
   </head>
@@ -1942,9 +2008,25 @@
       <div class="config-card">
         <div class="config-title">
           <span>Network Information</span>
-          <button id="refresh-ip-info" class="refresh-btn" aria-label="Refresh IP information" title="Refresh IP information">
-            <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+          <button
+            id="refresh-ip-info"
+            class="refresh-btn"
+            aria-label="Refresh IP information"
+            title="Refresh IP information"
+          >
+            <svg
+              class="refresh-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+              />
             </svg>
             Refresh
           </button>
@@ -1952,31 +2034,91 @@
         <div class="ip-info-grid">
           <div class="ip-info-section">
             <div class="ip-info-header">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v16.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h6.9c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V3.6c0-.4-.2-.8-.5-1.1-.3-.3-.7-.5-1.1-.5z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M15.5 2H8.6c-.4 0-.8.2-1.1.5-.3.3-.5.7-.5 1.1v16.8c0 .4.2.8.5 1.1.3.3.7.5 1.1.5h6.9c.4 0 .8-.2 1.1-.5.3-.3.5-.7.5-1.1V3.6c0-.4-.2-.8-.5-1.1-.3-.3-.7-.5-1.1-.5z"
+                />
                 <circle cx="12" cy="18" r="1" />
               </svg>
               <h3>Proxy Server</h3>
             </div>
             <div class="ip-info-content">
-              <div class="ip-info-item"><span class="label">Proxy Host</span><span class="value" id="proxy-host"><span class="skeleton" style="width: 150px"></span></span></div>
-              <div class="ip-info-item"><span class="label">IP Address</span><span class="value" id="proxy-ip"><span class="skeleton" style="width: 120px"></span></span></div>
-              <div class="ip-info-item"><span class="label">Location</span><span class="value" id="proxy-location"><span class="skeleton" style="width: 100px"></span></span></div>
-              <div class="ip-info-item"><span class="label">ISP Provider</span><span class="value" id="proxy-isp"><span class="skeleton" style="width: 140px"></span></span></div>
+              <div class="ip-info-item">
+                <span class="label">Proxy Host</span
+                ><span class="value" id="proxy-host"
+                  ><span class="skeleton" style="width: 150px"></span
+                ></span>
+              </div>
+              <div class="ip-info-item">
+                <span class="label">IP Address</span
+                ><span class="value" id="proxy-ip"
+                  ><span class="skeleton" style="width: 120px"></span
+                ></span>
+              </div>
+              <div class="ip-info-item">
+                <span class="label">Location</span
+                ><span class="value" id="proxy-location"
+                  ><span class="skeleton" style="width: 100px"></span
+                ></span>
+              </div>
+              <div class="ip-info-item">
+                <span class="label">ISP Provider</span
+                ><span class="value" id="proxy-isp"
+                  ><span class="skeleton" style="width: 140px"></span
+                ></span>
+              </div>
             </div>
           </div>
           <div class="ip-info-section">
             <div class="ip-info-header">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"
+                />
               </svg>
               <h3>Your Connection</h3>
             </div>
             <div class="ip-info-content">
-              <div class="ip-info-item"><span class="label">Your IP</span><span class="value" id="client-ip"><span class="skeleton" style="width: 110px"></span></span></div>
-              <div class="ip-info-item"><span class="label">Location</span><span class="value" id="client-location"><span class="skeleton" style="width: 90px"></span></span></div>
-              <div class="ip-info-item"><span class="label">ISP Provider</span><span class="value" id="client-isp"><span class="skeleton" style="width: 130px"></span></span></div>
-              <div class="ip-info-item"><span class="label">Risk Score</span><span class="value" id="client-proxy"><span class="skeleton" style="width: 100px"></span></span></div>
+              <div class="ip-info-item">
+                <span class="label">Your IP</span
+                ><span class="value" id="client-ip"
+                  ><span class="skeleton" style="width: 110px"></span
+                ></span>
+              </div>
+              <div class="ip-info-item">
+                <span class="label">Location</span
+                ><span class="value" id="client-location"
+                  ><span class="skeleton" style="width: 90px"></span
+                ></span>
+              </div>
+              <div class="ip-info-item">
+                <span class="label">ISP Provider</span
+                ><span class="value" id="client-isp"
+                  ><span class="skeleton" style="width: 130px"></span
+                ></span>
+              </div>
+              <div class="ip-info-item">
+                <span class="label">Risk Score</span
+                ><span class="value" id="client-proxy"
+                  ><span class="skeleton" style="width: 100px"></span
+                ></span>
+              </div>
             </div>
           </div>
         </div>
@@ -1985,8 +2127,22 @@
       <div class="config-card">
         <div class="config-title">
           <span>Xray Core Clients</span>
-          <button class="icon-btn" aria-label="Copy configuration" title="Copy configuration" onclick="copyToClipboard(this, '{{CONFIG_DREAM}}')">
-            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            class="icon-btn"
+            aria-label="Copy configuration"
+            title="Copy configuration"
+            onclick="copyToClipboard(this, '{{CONFIG_DREAM}}')"
+          >
+            <svg
+              class="copy-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
@@ -1996,32 +2152,61 @@
           <pre id="xray-config">{{CONFIG_DREAM}}</pre>
         </div>
         <div class="client-buttons">
-          <a href="{{URL_EXCLAVE}}" id="exclave-import-btn" class="button client-btn" data-copy-url="{{URL_EXCLAVE}}" aria-label="Import to Exclave, long press to copy link">
-            <span class="client-icon"><svg viewBox="0 0 24 24">
+          <a
+            href="{{URL_EXCLAVE}}"
+            id="exclave-import-btn"
+            class="button client-btn"
+            data-copy-url="{{URL_EXCLAVE}}"
+            aria-label="Import to Exclave, long press to copy link"
+          >
+            <span class="client-icon"
+              ><svg viewBox="0 0 24 24">
                 <rect x="3" y="7" width="18" height="12" rx="2" />
-                <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-              </svg></span>
+                <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg
+            ></span>
             <span class="button-text">Import to Exclave</span>
           </a>
-          <a href="{{URL_V2RAYNG}}" id="v2rayng-import-btn" class="button client-btn" data-copy-url="{{URL_V2RAYNG}}" data-copy-url-enhanced="{{URL_V2RAYNG_ENHANCED}}" aria-label="Import to V2rayNG, long press to copy link">
-            <span class="client-icon"><svg viewBox="0 0 24 24">
+          <a
+            href="{{URL_V2RAYNG}}"
+            id="v2rayng-import-btn"
+            class="button client-btn"
+            data-copy-url="{{URL_V2RAYNG}}"
+            data-copy-url-enhanced="{{URL_V2RAYNG_ENHANCED}}"
+            aria-label="Import to V2rayNG, long press to copy link"
+          >
+            <span class="client-icon"
+              ><svg viewBox="0 0 24 24">
                 <path d="M12 2L4 6v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V6l-8-4z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg></span>
+                <path d="M9 12l2 2 4-4" /></svg
+            ></span>
             <span class="button-text">Import to V2rayNG</span>
           </a>
-          <a href="{{URL_CLASH}}" id="clash-import-btn" class="button client-btn" data-copy-url="{{URL_CLASH}}" aria-label="Import to Clash Meta, long press to copy link">
-            <span class="client-icon"><svg viewBox="0 0 24 24">
+          <a
+            href="{{URL_CLASH}}"
+            id="clash-import-btn"
+            class="button client-btn"
+            data-copy-url="{{URL_CLASH}}"
+            aria-label="Import to Clash Meta, long press to copy link"
+          >
+            <span class="client-icon"
+              ><svg viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9" />
-                <path d="M8 12h8M12 8v8" />
-              </svg></span>
+                <path d="M8 12h8M12 8v8" /></svg
+            ></span>
             <span class="button-text">Import to Clash</span>
           </a>
-          <a href="{{URL_HIDDIFY}}" id="hiddify-import-btn" class="button client-btn" data-copy-url="{{URL_HIDDIFY}}" aria-label="Import to Hiddify, long press to copy link">
-            <span class="client-icon"><svg viewBox="0 0 24 24">
+          <a
+            href="{{URL_HIDDIFY}}"
+            id="hiddify-import-btn"
+            class="button client-btn"
+            data-copy-url="{{URL_HIDDIFY}}"
+            aria-label="Import to Hiddify, long press to copy link"
+          >
+            <span class="client-icon"
+              ><svg viewBox="0 0 24 24">
                 <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
-                <circle cx="12" cy="12" r="2.6" />
-              </svg></span>
+                <circle cx="12" cy="12" r="2.6" /></svg
+            ></span>
             <span class="button-text">Import to Hiddify</span>
           </a>
         </div>
@@ -2032,9 +2217,18 @@
           <div class="nat64-header">
             <div class="nat64-heading">
               <div class="nat64-mark" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <circle cx="12" cy="12" r="9" />
-                  <path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9S14.5 16.5 12 21M12 3c-2.5 2.5-3.5 5.5-3.5 9S9.5 18.5 12 21" />
+                  <path
+                    d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9S14.5 16.5 12 21M12 3c-2.5 2.5-3.5 5.5-3.5 9S9.5 18.5 12 21"
+                  />
                 </svg>
               </div>
               <div class="nat64-heading-text">
@@ -2044,7 +2238,7 @@
             </div>
 
             <label class="switch" aria-label="Toggle NAT64 fallback for the copied config">
-              <input type="checkbox" id="nat64-toggle" data-default="{{NAT64_DEFAULT}}">
+              <input type="checkbox" id="nat64-toggle" data-default="{{NAT64_DEFAULT}}" />
               <span class="switch-track">
                 <span class="switch-thumb"></span>
               </span>
@@ -2052,8 +2246,10 @@
           </div>
 
           <p class="nat64-description">
-            If the direct route and configured ProxyIPs fail, the worker can translate the destination through
-            <span class="mono">64:ff9b::/96</span> and use Cloudflare's NAT64 gateway as the final fallback.
+            If the direct route and configured ProxyIPs fail, the worker can translate the
+            destination through
+            <span class="mono">64:ff9b::/96</span> and use Cloudflare's NAT64 gateway as the final
+            fallback.
           </p>
 
           <div class="nat64-route">
@@ -2076,8 +2272,24 @@
             </div>
           </div>
 
-          <button id="nat64-copy-btn" type="button" class="icon-btn nat64-copy-btn" aria-label="Copy config with this NAT64 setting" data-nat64-on="{{CONFIG_NAT64_ON}}" data-nat64-off="{{CONFIG_NAT64_OFF}}">
-            <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button
+            id="nat64-copy-btn"
+            type="button"
+            class="icon-btn nat64-copy-btn"
+            aria-label="Copy config with this NAT64 setting"
+            data-nat64-on="{{CONFIG_NAT64_ON}}"
+            data-nat64-off="{{CONFIG_NAT64_OFF}}"
+          >
+            <svg
+              class="copy-icon"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
@@ -2089,7 +2301,14 @@
           <div class="proxyip-header">
             <div class="proxyip-heading">
               <div class="proxyip-mark" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <circle cx="12" cy="12" r="3" />
                   <circle cx="12" cy="12" r="9" />
                   <path d="M3 12h6M15 12h6M12 3v6M12 15v6" />
@@ -2106,15 +2325,32 @@
           </div>
 
           <p class="proxyip-description">
-            Select a country and choose one or more proxy endpoints to generate client-ready configurations.
+            Select a country and choose one or more proxy endpoints to generate client-ready
+            configurations.
           </p>
 
           <div class="proxyip-toolbar">
             <span class="proxyip-toolbar-label">Available locations</span>
 
-            <button id="proxyip-refresh" class="refresh-btn" aria-label="Refresh ProxyIP list" title="Refresh ProxyIP list">
-              <svg class="refresh-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" />
+            <button
+              id="proxyip-refresh"
+              class="refresh-btn"
+              aria-label="Refresh ProxyIP list"
+              title="Refresh ProxyIP list"
+            >
+              <svg
+                class="refresh-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+                />
               </svg>
               Refresh
             </button>
@@ -2127,7 +2363,16 @@
 
             <div class="proxyip-bulk-actions">
               <button type="button" id="proxyip-bulk-copy-xray" class="icon-btn" disabled>
-                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  class="copy-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
@@ -2135,7 +2380,16 @@
               </button>
 
               <button type="button" id="proxyip-bulk-copy-sb" class="icon-btn" disabled>
-                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  class="copy-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
@@ -2154,7 +2408,14 @@
         <div class="fragment-header">
           <div class="fragment-heading">
             <div class="fragment-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M5 7h14M5 12h14M5 17h14" />
                 <circle cx="8" cy="7" r="1.5" fill="currentColor" stroke="none" />
                 <circle cx="15" cy="12" r="1.5" fill="currentColor" stroke="none" />
@@ -2171,8 +2432,12 @@
 
         <div class="fragment-toolbar">
           <div class="fragment-presets" role="tablist" aria-label="Fragment presets">
-            <button type="button" class="fragment-preset active" data-preset="default">Default</button>
-            <button type="button" class="fragment-preset" data-preset="aggressive">Aggressive</button>
+            <button type="button" class="fragment-preset active" data-preset="default">
+              Default
+            </button>
+            <button type="button" class="fragment-preset" data-preset="aggressive">
+              Aggressive
+            </button>
             <button type="button" class="fragment-preset" data-preset="custom">Custom</button>
           </div>
 
@@ -2184,15 +2449,28 @@
 
         <div id="fragment-chain" class="fragment-chain"></div>
 
-        <button id="fragment-add-btn" type="button" class="fragment-add">
-          + Add Fragment
-        </button>
+        <button id="fragment-add-btn" type="button" class="fragment-add">+ Add Fragment</button>
 
         <div id="fragment-preview" class="fragment-preview json-mode">
           <div class="fragment-preview-header">
             <span class="fragment-preview-title">Generated PattNG Conf</span>
-            <button id="copy-pattng-btn" type="button" class="icon-btn" aria-label="Copy configuration" title="Copy configuration">
-              <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <button
+              id="copy-pattng-btn"
+              type="button"
+              class="icon-btn"
+              aria-label="Copy configuration"
+              title="Copy configuration"
+            >
+              <svg
+                class="copy-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
@@ -2202,7 +2480,7 @@
           <pre id="fragment-json-preview" class="fragment-json"></pre>
         </div>
 
-        <pre id="pattng-config" style="display:none">{{CONFIG_PATTNG}}</pre>
+        <pre id="pattng-config" style="display: none">{{CONFIG_PATTNG}}</pre>
       </div>
 
       <div class="fragment-footer">
@@ -2222,11 +2500,25 @@
       </div>
     </div>
 
-    <div id="custom-config-card" class="config-card" style="display: none;">
+    <div id="custom-config-card" class="config-card" style="display: none">
       <div class="config-title">
         <span>Custom Clean IP Nodes</span>
-        <button id="btn-copy-custom" class="icon-btn" aria-label="Copy all custom configs" title="Copy all custom configs">
-          <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <button
+          id="btn-copy-custom"
+          class="icon-btn"
+          aria-label="Copy all custom configs"
+          title="Copy all custom configs"
+        >
+          <svg
+            class="copy-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
@@ -2237,25 +2529,58 @@
       </div>
     </div>
 
-    <span id="open-custom-ips" class="custom-routing-trigger" role="button" tabindex="0">➔ Define Custom Clean IPs</span>
+    <span id="open-custom-ips" class="custom-routing-trigger" role="button" tabindex="0"
+      >➔ Define Custom Clean IPs</span
+    >
 
     <div class="footer">
-      <p>© <span id="current-year"></span> REvil, <b><a href="https://github.com/NiREvil/zizifn" target="_blank" rel="noopener noreferrer">Freedom to Dream</a></b></p>
+      <p>
+        © <span id="current-year"></span> REvil,
+        <b
+          ><a href="https://github.com/NiREvil/zizifn" target="_blank" rel="noopener noreferrer"
+            >Freedom to Dream</a
+          ></b
+        >
+      </p>
     </div>
 
-    <div id="hiddify-dns-modal" class="modal-overlay" style="display: none" role="dialog" aria-modal="true" aria-labelledby="hiddify-modal-title">
+    <div
+      id="hiddify-dns-modal"
+      class="modal-overlay"
+      style="display: none"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="hiddify-modal-title"
+    >
       <div class="modal-content">
         <h3 id="hiddify-modal-title" class="modal-title">Important Note for Hiddify Users</h3>
-        <p class="modal-text">For the configuration to work correctly, you need to change the <strong>Remote DNS</strong> setting/DNS in the Hiddify app.</p>
-        <div class="modal-instruction">Change from: <code>tcp://8.8.8.8</code><br />To: <code>https://8.8.8.8/dns-query</code></div>
+        <p class="modal-text">
+          For the configuration to work correctly, you need to change the
+          <strong>Remote DNS</strong> setting/DNS in the Hiddify app.
+        </p>
+        <div class="modal-instruction">
+          Change from: <code>tcp://8.8.8.8</code><br />To: <code>https://8.8.8.8/dns-query</code>
+        </div>
         <button id="hiddify-modal-continue" class="button client-btn">Continue to Hiddify</button>
       </div>
     </div>
 
-    <div id="v2rayng-choice-modal" class="modal-overlay" style="display: none" role="dialog" aria-modal="true" aria-labelledby="v2rayng-choice-title">
+    <div
+      id="v2rayng-choice-modal"
+      class="modal-overlay"
+      style="display: none"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="v2rayng-choice-title"
+    >
       <div class="modal-content">
         <h3 id="v2rayng-choice-title" class="modal-title">Choose Config Type</h3>
-        <p class="modal-text">Select the subscription type you want to import into v2rayNG OR <a href="https://github.com/patterniha/v2rayNG" target="_blank" rel="noopener noreferrer">PattNG</a>.</p>
+        <p class="modal-text">
+          Select the subscription type you want to import into v2rayNG OR
+          <a href="https://github.com/patterniha/v2rayNG" target="_blank" rel="noopener noreferrer"
+            >PattNG</a
+          >.
+        </p>
         <div class="modal-btn-group">
           <button id="v2rayng-choice-normal" class="button client-btn">Normal</button>
           <button id="v2rayng-choice-enhanced" class="button client-btn">Enhanced</button>
@@ -2263,14 +2588,31 @@
       </div>
     </div>
 
-    <div id="custom-ips-modal" class="modal-overlay" style="display: none" role="dialog" aria-modal="true" aria-labelledby="custom-modal-title">
+    <div
+      id="custom-ips-modal"
+      class="modal-overlay"
+      style="display: none"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="custom-modal-title"
+    >
       <div class="modal-content">
         <h3 id="custom-modal-title" class="modal-title">Custom Clean IPs</h3>
-        <p class="modal-text">Enter your clean Cloudflare IPs or Domains (one per line) to dynamically inject them into your configs.</p>
-        <textarea id="custom-ips-input" class="modal-textarea" placeholder="e.g.&#10;104.20.20.20&#10;clean-cf.yourdomain.com:8443" aria-label="Custom clean IPs input"></textarea>
+        <p class="modal-text">
+          Enter your clean Cloudflare IPs or Domains (one per line) to dynamically inject them into
+          your configs.
+        </p>
+        <textarea
+          id="custom-ips-input"
+          class="modal-textarea"
+          placeholder="e.g.&#10;104.20.20.20&#10;clean-cf.yourdomain.com:8443"
+          aria-label="Custom clean IPs input"
+        ></textarea>
         <div class="modal-btn-group">
           <button id="custom-ips-save" class="button client-btn">Save & Generate</button>
-          <button id="custom-ips-cancel" class="button client-btn modal-btn-secondary">Cancel</button>
+          <button id="custom-ips-cancel" class="button client-btn modal-btn-secondary">
+            Cancel
+          </button>
         </div>
       </div>
     </div>

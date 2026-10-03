@@ -336,11 +336,7 @@ async function fetchFreeIpMeta(ip) {
   }
 
   try {
-    const res = await safeFetch(
-      `https://ipapi.co/${ip}/json/`,
-      { headers: API_HEADERS },
-      4000,
-    );
+    const res = await safeFetch(`https://ipapi.co/${ip}/json/`, { headers: API_HEADERS }, 4000);
     if (res.ok) {
       const data = await res.json();
       if (data && !data.error) {

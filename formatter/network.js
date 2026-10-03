@@ -211,23 +211,22 @@ async function HandleTCPOutBound(
     }
     log(`falling back to NAT64: ${nat64Address}`);
     const tcpSocket = await connectAndWrite(nat64Address, portRemote);
-    tcpSocket.closed
-      .catch((error) => console.log("NAT64 tcpSocket closed error", error))
-      let tcpSocket;
-      try {
-        tcpSocket = await connectAndWrite(addressRemote, portRemote);
-      } catch (error) {
-        log("direct connect failed", error);
-        await retryWithPool(config.proxyPool || [], 0);
-        return;
-      }
-      RemoteSocketToWS(
-        tcpSocket,
-        webSocket,
-        protocolResponseHeader,
-        () => retryWithPool(config.proxyPool || [], 0),
-        log,
-      );
+    tcpSocket.closed.catch((error) => console.log("NAT64 tcpSocket closed error", error));
+    let tcpSocket;
+    try {
+      tcpSocket = await connectAndWrite(addressRemote, portRemote);
+    } catch (error) {
+      log("direct connect failed", error);
+      await retryWithPool(config.proxyPool || [], 0);
+      return;
+    }
+    RemoteSocketToWS(
+      tcpSocket,
+      webSocket,
+      protocolResponseHeader,
+      () => retryWithPool(config.proxyPool || [], 0),
+      log,
+    );
   }
 
   const tcpSocket = await connectAndWrite(addressRemote, portRemote);
