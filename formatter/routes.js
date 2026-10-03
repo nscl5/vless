@@ -14,11 +14,20 @@ import {
   cacheGetJson,
   cachePutJson,
   pickRandomProxyPort,
+  API_HEADERS,
 } from "./core.js";
 
 import panelB64 from "./panel.b64";
-const panelBytes = Uint8Array.from(atob(panelB64), (c) => c.charCodeAt(0));
-const panelHtml = new TextDecoder("utf-8").decode(panelBytes);
+
+let panelHtml = null;
+function getPanelHtml() {
+  if (!panelHtml) {
+    panelHtml = new TextDecoder("utf-8").decode(
+      Uint8Array.from(atob(panelB64), (c) => c.charCodeAt(0)),
+    );
+  }
+  return panelHtml;
+}
 
 export async function handleIpSubscription(
   request,
@@ -189,8 +198,8 @@ export async function handleIpSubscription(
 export async function handleMyConnection(request, env, ctx) {
   const clientIP = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
   const cf = request.cf || {};
-  let threatScore = 0;
-  let risk = "Low";
+  let threatScore = null;
+  let risk = "Unknown";
   let country = cf.country || "";
   let city = cf.city || "";
   let isp = cf.asOrganization || "";
@@ -198,20 +207,14 @@ export async function handleMyConnection(request, env, ctx) {
   try {
     const harmonicaRes = await safeFetch(
       `https://api-serpents.pages.dev/${clientIP}`,
-      {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
-          Accept: "application/json",
-        },
-      },
+      { headers: API_HEADERS },
       4000,
     );
     if (harmonicaRes.ok) {
       const data = await harmonicaRes.json();
       if (data) {
         const targetObj = data.info || data;
-        threatScore = targetObj.score ?? targetObj.fraud_score ?? targetObj.threatScore ?? 0;
+        threatScore = targetObj.score ?? targetObj.fraud_score ?? targetObj.threatScore ?? null;
         if (targetObj.risk) risk = targetObj.risk.charAt(0).toUpperCase() + targetObj.risk.slice(1);
 
         const details = data.details || {};
@@ -316,7 +319,7 @@ export async function handleProxyHostInfo(request, env, ctx) {
 
 async function fetchFreeIpMeta(ip) {
   try {
-    const res = await safeFetch(`https://ipwho.is/${ip}`, {}, 4000);
+    const res = await safeFetch(`https://ipwho.is/${ip}`, { headers: API_HEADERS }, 4000);
     if (res.ok) {
       const data = await res.json();
       if (data && data.success !== false) {
@@ -335,7 +338,7 @@ async function fetchFreeIpMeta(ip) {
   try {
     const res = await safeFetch(
       `https://ipapi.co/${ip}/json/`,
-      { headers: { "User-Agent": "Mozilla/5.0" } },
+      { headers: API_HEADERS },
       4000,
     );
     if (res.ok) {
@@ -368,13 +371,7 @@ async function FetchIPData(ip) {
   try {
     const res = await safeFetch(
       `https://cf-connected.pages.dev/${ip}`,
-      {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
-          Accept: "application/json",
-        },
-      },
+      { headers: API_HEADERS },
       4000,
     );
     if (res.ok) {
@@ -472,7 +469,7 @@ async function resolveProxyPoolHost(host, port, ctx) {
     }
   }
 
-  pool = pool.filter((p) => p.ip && !isInIgnoredRange(p.ip));
+  pool = pool.filter((p) => p.ip && !isInIgnoredRange(p.ip)).slice(0, 15);
   pool = await enrichWithPersistentCache(ctx, pool);
 
   return pool.map((p) => ({
@@ -713,7 +710,7 @@ export async function handleConfigPage(userID, hostName, proxyAddress, workerNam
   const subSbUrl = `https://${hostName}/sb/${userID}?name=${encodedSubName}`;
   const subProxyIpsUrl = `https://${hostName}/proxy-ips/${userID}`;
 
-  const finalHTML = panelHtml
+  const finalHTML = getPanelHtml()
     .replace(/{{PROXY_ADDRESS}}/g, proxyAddress)
     .replace(/{{CONFIG_DREAM}}/g, dream)
     .replace(/{{CONFIG_FREEDOM}}/g, freedom)
