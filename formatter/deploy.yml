@@ -12,17 +12,17 @@ on:
         type: boolean
         default: true
       account_2:
-        description: "Deploy to Account 2"
+        description: Deploy to Account 2
         required: false
         type: boolean
         default: false
       account_3:
-        description: "Deploy to Account 3"
+        description: Deploy to Account 3
         required: false
         type: boolean
         default: false
       account_4:
-        description: "Deploy to Account 4"
+        description: Deploy to Account 4
         required: false
         type: boolean
         default: false
