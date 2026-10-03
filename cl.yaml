@@ -17,7 +17,7 @@ external-controller: 0.0.0.0:9093
 external-ui-url: "https://github.com/MetaCubeX/metacubexd/archive/refs/heads/gh-pages.zip"
 external-controller-cors:
   allow-origins:
-    - '*'
+    - "*"
   allow-private-network: true
 profile:
   store-selected: true
@@ -51,7 +51,7 @@ dns:
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   fake-ip-filter:
-    - '*.lan'
+    - "*.lan"
     - geosite:private
 tun:
   enable: true
