@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       account_1:
-        description: "Deploy to Account 1 — rename this to your account's label."
+        description: Deploy to Account 1
         required: false
         type: boolean
         default: true
@@ -26,10 +26,10 @@ on:
         required: false
         type: boolean
         default: false
-      workername:
-        description: "Optional: Enter a specific Worker name for this run (lowercase only)"
+      workernames:
+        description: "Optional: Worker names in account order, comma-separated (e.g. name1,name2,name3,name4). Leave a slot empty to use the default."
         required: false
-        default: "0x00"
+        default: ""
       proxyip:
         description: "Optional: Enter a specific Proxy IP/host for this run"
         required: false
@@ -43,6 +43,13 @@ on:
         required: false
         type: boolean
         default: false
+        
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   plan:
@@ -51,7 +58,7 @@ jobs:
     outputs:
       matrix: ${{ steps.build.outputs.matrix }}
     steps:
-      - name: ● Build account matrix
+      - name: ⬜ Build account matrix
         id: build
         env:
           EVENT: ${{ github.event_name }}
@@ -87,16 +94,21 @@ jobs:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
-      - name: ● Checkout code
+      - name: ⬜ Checkout code
         uses: actions/checkout@v7
 
-      - name: ● Install Rust
+      - name: ⬜ Install Rust
         uses: dtolnay/rust-toolchain@stable
+        
+      - name: ⬜ Cache Rust build
+        uses: Swatinem/rust-cache@v2
 
-      - name: ● Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: ⬜ Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
 
-      - name: ● Resolve account credentials (#${{ matrix.index }})
+      - name: ⬜ Resolve account credentials (#${{ matrix.index }})
         id: account
         env:
           API_TOKEN: ${{ matrix.index == 1 && secrets.CLOUDFLARE_API_TOKEN || secrets[format('CLOUDFLARE_API_TOKEN_{0}', matrix.index)] }}
@@ -117,7 +129,7 @@ jobs:
           LABEL="${ACCOUNT_LABEL:-Account ${{ matrix.index }}}"
           echo "label=$LABEL" >> "$GITHUB_OUTPUT"
 
-      - name: ● Resolve UUID
+      - name: ⬜ Resolve UUID
         id: uuidval
         env:
           INPUT_UUID: ${{ inputs.uuid }}
@@ -131,15 +143,14 @@ jobs:
           elif [ -n "$SECRET_UUID" ]; then
             UUID_VALUE="$SECRET_UUID"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            UUID_VALUE=$(curl -s --max-time 5 https://www.uuidgenerator.net/api/version4 | tr -d '\n\r ')
-            if ! [[ "$UUID_VALUE" =~ $UUID_REGEX ]]; then
-              UUID_VALUE="$FALLBACK_UUID"
-            fi
+            UUID_VALUE=$(cat /proc/sys/kernel/random/uuid)
           else
+            echo "::warning::UUID secret not set, using public fallback"
             UUID_VALUE="$FALLBACK_UUID"
           fi
 
           if ! [[ "$UUID_VALUE" =~ $UUID_REGEX ]]; then
+            echo "::warning::Invalid UUID provided, using public fallback"
             UUID_VALUE="$FALLBACK_UUID"
           fi
 
@@ -149,7 +160,7 @@ jobs:
           echo "uuid_masked=$UUID_MASKED" >> "$GITHUB_OUTPUT"
           echo "uuid=$UUID_VALUE" >> "$GITHUB_OUTPUT"
 
-      - name: ● Resolve ProxyIP
+      - name: ⬜ Resolve ProxyIP
         id: proxyval
         env:
           INPUT_PROXYIP: ${{ inputs.proxyip }}
@@ -164,7 +175,7 @@ jobs:
           fi
           echo "proxyip=$PROXY_VALUE" >> "$GITHUB_OUTPUT"
 
-      - name: ● Resolve Placement (Gemini & Google AI Studio)
+      - name: ⬜ Resolve Placement (Gemini & Google AI Studio)
         id: placementval
         env:
           INPUT_ENABLE: ${{ inputs.enable_gemini }}
@@ -184,21 +195,27 @@ jobs:
           echo "value=$VALUE" >> "$GITHUB_OUTPUT"
           echo "summary=$SUMMARY" >> "$GITHUB_OUTPUT"
 
-      - name: ● Resolve worker name
+      - name: ⬜ Resolve worker name
         id: worker
         env:
+          INPUT_WORKERNAMES: ${{ inputs.workernames }}
+          ACCOUNT_INDEX: ${{ matrix.index }}
           SECRET_WORKERNAME: ${{ matrix.index == 1 && secrets.WORKERNAME || secrets[format('WORKERNAME_{0}', matrix.index)] }}
         run: |
           DEFAULT_NAME=$(grep -m1 '^name' wrangler.toml | sed -E 's/name[[:space:]]*=[[:space:]]*"(.*)"/\1/')
-          NAME="${{ inputs.workername }}"
+          NAME=$(echo "$INPUT_WORKERNAMES" | awk -F',' -v i="$ACCOUNT_INDEX" '{print $i}' | tr -d '[:space:]')
           if [ -z "$NAME" ]; then NAME="$SECRET_WORKERNAME"; fi
           if [ -z "$NAME" ]; then NAME="$DEFAULT_NAME"; fi
+          if ! [[ "$NAME" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+            echo "::error::Invalid worker name. Use lowercase letters, digits and hyphens only."
+            exit 1
+          fi
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
 
-      - name: ▶ Encode panel
+      - name: ⬜ Encode panel
         run: base64 -w0 index.html > src/panel.b64
 
-      - name: ● Apply Placement Hint
+      - name: ⬜ Apply Placement Hint
         if: steps.placementval.outputs.key != ''
         run: |
           {
@@ -207,7 +224,7 @@ jobs:
             echo "${{ steps.placementval.outputs.key }} = \"${{ steps.placementval.outputs.value }}\""
           } >> wrangler.toml
 
-      - name: "● Deploy via Wrangler Action (${{ steps.worker.outputs.name }} → ${{ steps.account.outputs.label }})"
+      - name: "⬜ Deploy via Wrangler Action (${{ steps.worker.outputs.name }} → ${{ steps.account.outputs.label }})"
         id: deploy
         uses: cloudflare/wrangler-action@v4
         with:
@@ -223,7 +240,7 @@ jobs:
           PROXYIP: ${{ steps.proxyval.outputs.proxyip }}
           WORKERNAME: ${{ steps.worker.outputs.name }}
 
-      - name: ● Deployment Summary
+      - name: ⬜ Deployment Summary
         run: |
           BASE_URL="${{ steps.deploy.outputs.deployment-url }}"
           BASE_URL="${BASE_URL%/}"
